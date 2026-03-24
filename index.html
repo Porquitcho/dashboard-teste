@@ -3671,10 +3671,8 @@
                     const response = await fetch(AUTOMATE_URL, {
                         method: 'POST',
                         headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({})
+                            'Accept': 'application/json'
+                        }
                     });
                     if (!response.ok) throw new Error(`Automate HTTP ${response.status}`);
                     const data = await response.json();
