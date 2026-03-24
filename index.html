@@ -3713,28 +3713,41 @@
         function converterParaCor(valor) {
             if (valor === null || valor === undefined || valor === '') return 'gray';
 
-            // Se vier como objeto Choice (Power Apps às vezes retorna assim)
-            if (typeof valor === 'object' && valor.Value) {
-                valor = valor.Value;
+            // Se vier como objeto Choice do SharePoint/Power Automate
+            if (typeof valor === 'object' && valor !== null) {
+                valor = valor.Value || valor.value || '';
+                if (!valor) return 'gray';
             }
 
-            // Extrair o número do início da string ou usar o valor diretamente
-            const num = typeof valor === 'string'
-                ? parseInt(valor.charAt(0))
-                : parseInt(valor);
+            const s = String(valor).trim().toLowerCase();
 
-            switch (num) {
-                case 1: return 'green';
-                case 2: return 'yellow';
-                case 3: return 'red';
-                default: return 'gray';
-            }
+            // Power Automate retorna o label completo em português
+            if (s.startsWith('verde'))    return 'green';
+            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('vermelho')) return 'red';
+
+            // Fallback: número 1/2/3 (mock ou REST API direta)
+            const num = parseInt(s.charAt(0));
+            if (num === 1) return 'green';
+            if (num === 2) return 'yellow';
+            if (num === 3) return 'red';
+            return 'gray';
         }
 
-        // TrifixPercentual — campo Número: >=80% verde, 50-79% amarelo, <50% vermelho
+        // TrifixPercentual — pode ser Choice ("Verde - Apartir X%") ou Número (>=80/50)
         function converterTrifix(percentual) {
             if (percentual === null || percentual === undefined || percentual === '') return 'gray';
-            const val = parseFloat(percentual);
+            if (typeof percentual === 'object' && percentual !== null) {
+                percentual = percentual.Value || percentual.value || '';
+                if (!percentual) return 'gray';
+            }
+            const s = String(percentual).trim().toLowerCase();
+            // Choice com texto em português
+            if (s.startsWith('verde'))    return 'green';
+            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('vermelho')) return 'red';
+            // Número direto (mock)
+            const val = parseFloat(s);
             if (isNaN(val)) return 'gray';
             if (val >= 80) return 'green';
             if (val >= 50) return 'yellow';
@@ -3756,10 +3769,20 @@
             return 'red';
         }
 
-        // VettingObservacoes — campo Número: <=6 verde, 7-12 amarelo, >12 vermelho
+        // ObsVetting — pode ser Choice ("Verde - Até 6") ou Número (<=6/12)
         function converterVetting(observacoes) {
             if (observacoes === null || observacoes === undefined || observacoes === '') return 'gray';
-            const val = parseFloat(observacoes);
+            if (typeof observacoes === 'object' && observacoes !== null) {
+                observacoes = observacoes.Value || observacoes.value || '';
+                if (!observacoes) return 'gray';
+            }
+            const s = String(observacoes).trim().toLowerCase();
+            // Choice com texto em português
+            if (s.startsWith('verde'))    return 'green';
+            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('vermelho')) return 'red';
+            // Número direto (mock)
+            const val = parseFloat(s);
             if (isNaN(val)) return 'gray';
             if (val <= 6) return 'green';
             if (val <= 12) return 'yellow';
@@ -3879,7 +3902,11 @@
 
         // Atualiza dadosIndicadores (NSE) com dados reais do SharePoint
         function atualizarNSENavio(nomeNavio, item) {
-            const n = v => (v !== null && v !== undefined && v !== '') ? parseFloat(v) || 0 : 0;
+            // IDOSD chega como "100%" — remover % antes de parsear
+            const n = v => {
+                if (v === null || v === undefined || v === '') return 0;
+                return parseFloat(String(v).replace('%','').trim()) || 0;
+            };
             dadosIndicadores[nomeNavio] = {
                 idoSD:           n(item.IDOSD),
                 reqsOutstanding: n(item.ReqOutstanding),
