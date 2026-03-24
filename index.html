@@ -3873,6 +3873,7 @@
             });
 
             // Após selecionar o mais recente de cada navio, atualizar painéis
+            console.log('📋 Navios selecionados:', Object.keys(dadosSharePoint));
             Object.entries(dadosSharePoint).forEach(([nomeNavio, item]) => {
                 // Atualizar painel de detalhes (obs + cores de todos os campos)
                 atualizarDetalhesNavio(nomeNavio, item);
