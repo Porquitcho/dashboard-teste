@@ -3679,11 +3679,7 @@
                     // O flow retorna o array diretamente ou dentro de .value
                     const items = Array.isArray(data) ? data : (data.value || []);
                     console.log(`✅ Power Automate retornou ${items.length} registros`);
-                    // DEBUG: mostrar campos do primeiro item para mapear nomes reais
-                    if (items.length > 0) {
-                        console.log('🔍 Campos do primeiro item:', JSON.stringify(Object.keys(items[0])));
-                        console.log('🔍 NomeNavio:', items[0].NomeNavio, '| Title:', items[0].Title);
-                    }
+
                     return items;
                 } catch (error) {
                     console.error('❌ Erro no Power Automate:', error);
@@ -3835,7 +3831,10 @@
             // Pegar dado mais recente de cada navio
             dadosSharePoint = {};
             dados.forEach(item => {
-                const nomeNavio = item.NomeNavio;
+                // NomeNavio pode vir como string ou como objeto {Value: '...'} do Power Automate
+                const nomeNavio = (item.NomeNavio && typeof item.NomeNavio === 'object')
+                    ? item.NomeNavio.Value
+                    : item.NomeNavio;
                 if (nomeNavio && !dadosSharePoint[nomeNavio]) {
                     dadosSharePoint[nomeNavio] = item;
 
