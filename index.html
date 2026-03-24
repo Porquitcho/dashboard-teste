@@ -3902,21 +3902,35 @@
 
         // Atualiza dadosIndicadores (NSE) com dados reais do SharePoint
         function atualizarNSENavio(nomeNavio, item) {
-            // IDOSD chega como "100%" — remover % antes de parsear
-            const n = v => {
+            // IDOSD é campo Percentagem no SharePoint → retorna decimal 0-1 (ex: 1.0 = 100%)
+            // ReqOutstanding e SRsOutstanding são Número inteiro
+            const pct = v => {
                 if (v === null || v === undefined || v === '') return 0;
-                return parseFloat(String(v).replace('%','').trim()) || 0;
+                let n = parseFloat(String(v).replace('%','').trim());
+                if (isNaN(n)) return 0;
+                // Se veio como decimal 0-1, converter para 0-100
+                if (n > 0 && n <= 1) n = Math.round(n * 100);
+                return n;
+            };
+            const num = v => {
+                if (v === null || v === undefined || v === '') return 0;
+                return parseInt(String(v).replace('%','').trim()) || 0;
             };
             dadosIndicadores[nomeNavio] = {
-                idoSD:           n(item.IDOSD),
-                reqsOutstanding: n(item.ReqOutstanding),
-                srsOutstanding:  n(item.SRsOutstanding)
+                idoSD:           pct(item.IDOSD),
+                reqsOutstanding: num(item.ReqOutstanding),
+                srsOutstanding:  num(item.SRsOutstanding)
             };
         }
 
         // Atualiza statusDetalhesNavios com obs e cores vindas do SharePoint
         function atualizarDetalhesNavio(nomeNavio, item) {
-            const c = v => converterParaCor(v);         // Choice → cor dashboard
+            // Converte para cor em PORTUGUÊS (verde/amarelo/vermelho/cinza)
+            // pois gerarItemCategoria usa esse formato
+            const c = v => {
+                const eng = converterParaCor(v);
+                return { green:'verde', yellow:'amarelo', red:'vermelho', gray:'cinza' }[eng] || 'cinza';
+            };
             const s = v => (v && v !== null) ? String(v) : '';  // obs segura
             statusDetalhesNavios[nomeNavio] = {
                 equipamentos: {
@@ -3934,7 +3948,7 @@
                     'Estado geral PM':                        { cor: c(item.EstadoGeralPM),     obs: s(item.EstadoPMObs) }
                 },
                 pessoal: {
-                    'Trifix %':                    { cor: converterTrifix(item.TrifixPercentual), obs: s(item.TrifixObs) },
+                    'Trifix %':                    { cor: c(item.TrifixPercentual), obs: s(item.TrifixObs) },
                     'Tripulantes vencidos':        { cor: c(item.TripulantesVencidos),            obs: s(item.TripulantesVencidosObs) },
                     'Crew Matrix':                 { cor: c(item.CrewMatrix),                     obs: s(item.CrewMatrixObs) },
                     'Certificação de Tripulante':  { cor: c(item.CertTripulante),                 obs: s(item.CertTripulanteObs) }
@@ -3942,7 +3956,7 @@
                 certificacao: {
                     'Pendência de Documentação Navio': { cor: c(item.PendenciaDoc),    obs: s(item.PendenciaDocObs) },
                     'Condição de classe':              { cor: c(item.CondicaoClasse),  obs: s(item.CondicaoClasseObs) },
-                    'Obs Vetting':                     { cor: converterVetting(item.ObsVetting), obs: s(item.ObsVettingObs) }
+                    'Obs Vetting':                     { cor: c(item.ObsVetting), obs: s(item.ObsVettingObs) }
                 }
             };
         }
