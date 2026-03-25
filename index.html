@@ -3974,13 +3974,19 @@
         // Atualiza tripulacaoNavios com dados reais do SharePoint
         function atualizarTripulacaoNavio(nomeNavio, item) {
             const vazio = '---';
+            // Capitaliza nomes: "ABEL ALBINO SANCA" → "Abel Albino Sanca"
+            const cap = s => {
+                if (!s || !s.trim()) return null;
+                return s.trim().toLowerCase().replace(/(?:^|\s)\S/g, c => c.toUpperCase());
+            };
+            const str = s => (s && s.trim()) ? s.trim() : '';
             tripulacaoNavios[nomeNavio] = {
-                CMT: (item.CMT && item.CMT.trim()) ? item.CMT.trim() : vazio,
-                CMT_MAT: (item.CMT_MAT && item.CMT_MAT.trim()) ? item.CMT_MAT.trim() : '',
-                CFM: (item.CFM && item.CFM.trim()) ? item.CFM.trim() : vazio,
-                CFM_MAT: (item.CFM_MAT && item.CFM_MAT.trim()) ? item.CFM_MAT.trim() : '',
-                IMT: (item.IMT && item.IMT.trim()) ? item.IMT.trim() : vazio,
-                IMT_MAT: (item.IMT_MAT && item.IMT_MAT.trim()) ? item.IMT_MAT.trim() : ''
+                CMT: cap(item.CMT) || vazio,
+                CMT_MAT: str(item.CMT_MAT),
+                CFM: cap(item.CFM) || vazio,
+                CFM_MAT: str(item.CFM_MAT),
+                IMT: cap(item.IMT) || vazio,
+                IMT_MAT: str(item.IMT_MAT)
             };
         }
 
