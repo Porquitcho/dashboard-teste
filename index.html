@@ -1840,6 +1840,3262 @@
                 grid-template-columns: 1fr;
             }
         }
+    
+        /* ── OVERLAY DE CARREGAMENTO ─────────────────────────────────────── */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(13, 27, 42, 0.82);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(3px);
+            transition: opacity 0.4s ease;
+        }
+        #loadingOverlay.fadeout {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            border: 5px solid rgba(255,255,255,0.15);
+            border-top-color: #4fc3f7;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            margin-top: 20px;
+            color: #b0c4d8;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.4s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+            100% { content: ''; }
+        }
+        </style>
+</head>
+
+<body>
+<div id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Buscando dados<span class="loading-dots"></span></div>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-logo" onclick="voltarParaHome()" style="cursor: pointer;" title="Voltar para Home">
+                <img src="https://transpetro.sharepoint.com/sites/EstadoGeralDosNavios2/DashboardApp/logo-transpetro.png"
+                    alt="Transpetro">
+            </div>
+            <div class="header-text">
+                <h1>Estado Geral dos Navios</h1>
+                <div class="subtitle">Sistema de Monitoramento - 26 Embarcações</div>
+            </div>
+            <div class="home-button-container">
+                <button class="btn-home" id="btnHome" onclick="voltarParaHome()" style="align-self:flex-end;">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                    </svg>
+                    <span class="tooltip-home">Home</span>
+                </button>
+                <div style="display:flex;flex-direction:row;gap:10px;">
+                    <button class="btn-home btn-sort" id="btnSort" onclick="toggleSortMode()" title="">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+                        </svg>
+                        <span class="tooltip-home">Ordenar: Original</span>
+                    </button>
+                    <button class="btn-home btn-privacy" id="btnPrivacy" onclick="togglePrivacyMode()">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                        <span class="tooltip-home">Ocultar nomes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Overlay e Popup de filtro (acionado pelos headers) -->
+        <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPopup()"></div>
+        <div class="filter-popup" id="filterPopup">
+            <div class="filter-popup-header">Filtrar por Classe</div>
+            <div class="filter-chips-container" id="filterChipsContainer"></div>
+            <div class="filter-actions">
+                <button class="filter-btn-clear" onclick="limparFiltrosClasse()">Limpar</button>
+                <button class="filter-btn-apply" onclick="aplicarFiltrosClasse()">Aplicar Filtros</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card" id="filterGreen" onclick="filterByColor('green')"
+                title="Filtrar embarcações com pelo menos 1 categoria OK">
+                <div class="stat-number" style="color: #00B050;" id="greenCount">0</div>
+                <div class="stat-label">Operacional</div>
+            </div>
+            <div class="stat-card" id="filterYellow" onclick="filterByColor('yellow')"
+                title="Filtrar embarcações com pelo menos 1 categoria em atenção">
+                <div class="stat-number" style="color: #FFC000;" id="yellowCount">0</div>
+                <div class="stat-label">Atenção</div>
+            </div>
+            <div class="stat-card" id="filterRed" onclick="filterByColor('red')"
+                title="Filtrar embarcações com pelo menos 1 categoria crítica">
+                <div class="stat-number" style="color: #FF0000;" id="redCount">0</div>
+                <div class="stat-label">Críticos</div>
+            </div>
+            <div class="stat-card" id="filterGray" onclick="filterByColor('gray')"
+                title="Filtrar embarcações com dados pendentes">
+                <div class="stat-number" style="color: #808080;" id="grayCount">0</div>
+                <div class="stat-label">Dados Pendentes</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="ship-list" id="shipList">
+                <div class="filter-dropdown-container">
+                    <button class="filter-dropdown-btn" onclick="toggleFilterDropdown()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"
+                            style="vertical-align: middle; margin-right: 5px;">
+                            <path d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
+                        </svg>
+                        Filtrar: <span id="filterLabel">Todas</span>
+                    </button>
+                    <div class="filter-dropdown-menu" id="filterDropdown">
+                        <div id="filterDropdownItems"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="systems-grid" id="systemsGrid"></div>
+        </div>
+
+        <!-- Container para modo Lista de Navios -->
+        <div class="lista-navios-container" id="listaNaviosContainer">
+            <div class="lista-lateral">
+                <div class="lista-lateral-titulo">🚢 Embarcações</div>
+                <div id="listaNaviosItems"></div>
+            </div>
+            <div class="painel-detalhes" id="painelDetalhes">
+                <div class="painel-placeholder">
+                    <div class="painel-placeholder-icon">🚢</div>
+                    <div class="painel-placeholder-texto">Selecione um navio na lista<br>para ver os detalhes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let navioSelecionado = null;
+
+        const sistemas = [
+            'Equipamentos',
+            'Pessoal',
+            'Certificação'
+        ];
+
+        const shipBirthDates = {
+            "CELSO FURTADO": "07/11/2011",
+            "JOAO CANDIDO": "14/05/2012",
+            "SERGIO BUARQUE DE HOLANDA": "18/06/2012",
+            "ANGRA DOS REIS": "01/07/2012",
+            "MADRE DE DEUS": "01/08/2012",
+            "RIO GRANDE": "25/09/2012",
+            "SAO SEBASTIAO": "25/09/2012",
+            "ROMULO ALMEIDA": "17/12/2012",
+            "SAO LUIZ": "01/01/2013",
+            "ZUMBI DOS PALMARES": "22/04/2013",
+            "JOSE ALENCAR": "10/10/2013",
+            "DRAGAO DO MAR": "16/12/2013",
+            "HENRIQUE DIAS": "19/11/2014",
+            "ANITA GARIBALDI": "30/12/2014",
+            "ANDRE REBOUCAS": "08/04/2015",
+            "OSCAR NIEMEYER": "09/07/2015",
+            "MARCILIO DIAS": "02/09/2015",
+            "JOSE DO PATROCINIO": "08/12/2015",
+            "BARBOSA LIMA SOBRINHO": "08/01/2016",
+            "DARCY RIBEIRO": "20/06/2016",
+            "LUCIO COSTA": "20/09/2016",
+            "MACHADO DE ASSIS": "21/09/2016",
+            "MILTON SANTOS": "10/05/2017",
+            "ABDIAS NASCIMENTO": "04/09/2017",
+            "GILBERTO FREYRE": "18/10/2017",
+            "CASTRO ALVES": "11/05/2018",
+            "CARLOS DRUMMOND DE ANDRADE": "12/09/2018",
+            "JORGE AMADO": "30/10/2018",
+            "OLAVO BILAC": "28/11/2018",
+            "GARRINCHA": "19/03/2019",
+            "PORTINARI": "24/06/2019"
+        };
+
+        // Dados de IDO-SD, Reqs Outstanding e SRs Outstanding por navio
+        const dadosIndicadores = {
+            // PANAMAX
+            "ANITA GARIBALDI": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "CASTRO ALVES": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "CARLOS DRUMMOND DE ANDRADE": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "OLAVO BILAC": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "GARRINCHA": { idoSD: 100, reqsOutstanding: 152, srsOutstanding: 22 },
+            "PORTINARI": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "JOAO CANDIDO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "DRAGAO DO MAR": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "HENRIQUE DIAS": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "ANDRE REBOUCAS": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "MARCILIO DIAS": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "JOSE DO PATROCINIO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "MACHADO DE ASSIS": { idoSD: 100, reqsOutstanding: 287, srsOutstanding: 31 },
+            "MILTON SANTOS": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "ABDIAS NASCIMENTO": { idoSD: 100, reqsOutstanding: 203, srsOutstanding: 44 },
+            "ZUMBI DOS PALMARES": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "CELSO FURTADO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "SERGIO BUARQUE DE HOLANDA": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "ROMULO ALMEIDA": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "JOSE ALENCAR": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "LUCIO COSTA": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "DARCY RIBEIRO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "BARBOSA LIMA SOBRINHO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "OSCAR NIEMEYER": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "GILBERTO FREYRE": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 },
+            "JORGE AMADO": { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 }
+        };
+
+        const tripulacaoNavios = {
+            // PANAMAX
+            "ANITA GARIBALDI": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            // AFRAMAX
+            "CASTRO ALVES": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "CARLOS DRUMMOND DE ANDRADE": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "OLAVO BILAC": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "GARRINCHA": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "PORTINARI": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            // SUEZMAX
+            "JOAO CANDIDO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "DRAGAO DO MAR": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "HENRIQUE DIAS": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "ANDRE REBOUCAS": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "MARCILIO DIAS": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "JOSE DO PATROCINIO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "MACHADO DE ASSIS": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "MILTON SANTOS": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "ABDIAS NASCIMENTO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "ZUMBI DOS PALMARES": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            // PRODUTOS
+            "CELSO FURTADO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "SERGIO BUARQUE DE HOLANDA": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "ROMULO ALMEIDA": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "JOSE ALENCAR": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            // GASEIRO 7K
+            "LUCIO COSTA": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "DARCY RIBEIRO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "BARBOSA LIMA SOBRINHO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "OSCAR NIEMEYER": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            // GASEIRO 4K
+            "GILBERTO FREYRE": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            },
+            "JORGE AMADO": {
+                CMT: "---", CMT_MAT: "",
+                CFM: "---", CFM_MAT: "",
+                IMT: "---", IMT_MAT: ""
+            }
+        };
+
+        const statusDetalhesNavios = {
+            "ANITA GARIBALDI": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "CASTRO ALVES": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "CARLOS DRUMMOND DE ANDRADE": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "OLAVO BILAC": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "GARRINCHA": {
+                equipamentos: {
+                    "Motor principal": { cor: "verde", obs: "" },
+                    "MCAs": { cor: "verde", obs: "" },
+                    "Grupo destilatório": { cor: "verde", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "verde", obs: "" },
+                    "Caldeira auxiliar": { cor: "verde", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "verde", obs: "" },
+                    "Sistema de carga e descarga": { cor: "amarelo", obs: "2 abertas  - 2.1.1 - Peça sobressalente e restabelecimento da notação ACCU; - 10.3.8 - Instalação do Dispositivo de Redução de Tensão (VRD)." },
+                    "Máquina do leme": { cor: "verde", obs: "" },
+                    "Purificadores": { cor: "verde", obs: "" },
+                    "Sistemas de navegação": { cor: "verde", obs: "" },
+                    "Estado geral convés": { cor: "verde", obs: "" },
+                    "Estado geral PM": { cor: "verde", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "verde", obs: "" },
+                    "Tripulantes vencidos": { cor: "verde", obs: "" },
+                    "Crew Matrix": { cor: "verde", obs: "" },
+                    "Certificação de Tripulante": { cor: "verde", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "verde", obs: "" },
+                    "Condição de classe": { cor: "verde", obs: "" },
+                    "Obs Vetting": { cor: "verde", obs: "" }
+                }
+            },
+            "PORTINARI": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "JOAO CANDIDO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "DRAGAO DO MAR": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "HENRIQUE DIAS": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "ANDRE REBOUCAS": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "MARCILIO DIAS": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "JOSE DO PATROCINIO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "MACHADO DE ASSIS": {
+                equipamentos: {
+                    "Motor principal": { cor: "verde", obs: "" },
+                    "MCAs": { cor: "amarelo", obs: "MCA 1 vencido, aguardando pendência da Saikai para retirada do swing set revisado " },
+                    "Grupo destilatório": { cor: "verde", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "verde", obs: "" },
+                    "Caldeira auxiliar": { cor: "verde", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "verde", obs: "" },
+                    "Sistema de carga e descarga": { cor: "vermelho", obs: "Ventilador#2 do gás inerte em reparo, TBC 3 aguardando teste final após reparo." },
+                    "Máquina do leme": { cor: "verde", obs: "" },
+                    "Purificadores": { cor: "vermelho", obs: "Purificadores MCAs inoperantes, aguardando chegada de material " },
+                    "Sistemas de navegação": { cor: "verde", obs: "" },
+                    "Estado geral convés": { cor: "vermelho", obs: "Tratamento e pintura em andamento pela tripulação" },
+                    "Estado geral PM": { cor: "verde", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "verde", obs: "" },
+                    "Tripulantes vencidos": { cor: "verde", obs: "" },
+                    "Crew Matrix": { cor: "amarelo", obs: "Tempo de embarque na função CMT + IMT = 0,75, não atende à maioria das Mayors" },
+                    "Certificação de Tripulante": { cor: "verde", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "verde", obs: "" },
+                    "Condição de classe": { cor: "verde", obs: "" },
+                    "Obs Vetting": { cor: "amarelo", obs: "2 abertas  - 2.1.1 - Peça sobressalente e restabelecimento da notação ACCU; - 10.3.8 - Instalação do Dispositivo de Redução de Tensão (VRD)." }
+                }
+            },
+            "MILTON SANTOS": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "ABDIAS NASCIMENTO": {
+                equipamentos: {
+                    "Motor principal": { cor: "amarelo", obs: "Cilindros 4 e 5 vencidos, previsto para serem realizadas na chegada ao Brasil, abr-26" },
+                    "MCAs": { cor: "verde", obs: "" },
+                    "Grupo destilatório": { cor: "vermelho", obs: "Salgamento pela condensadora, foram fornecidas 22 placas, que foram substituídas em viagem Singapura x Brasil. Destilador produzindo com baixa vazão e ainda em fase de teste." },
+                    "Equip. fundeio, amarração e guindastes": { cor: "verde", obs: "" },
+                    "Caldeira auxiliar": { cor: "verde", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "verde", obs: "" },
+                    "Sistema de carga e descarga": { cor: "verde", obs: "" },
+                    "Máquina do leme": { cor: "verde", obs: "" },
+                    "Purificadores": { cor: "verde", obs: "" },
+                    "Sistemas de navegação": { cor: "verde", obs: "" },
+                    "Estado geral convés": { cor: "amarelo", obs: "Necessita tratamento e pintura " },
+                    "Estado geral PM": { cor: "verde", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "verde", obs: "90%" },
+                    "Tripulantes vencidos": { cor: "verde", obs: "" },
+                    "Crew Matrix": { cor: "verde", obs: "" },
+                    "Certificação de Tripulante": { cor: "verde", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "verde", obs: "" },
+                    "Condição de classe": { cor: "verde", obs: "" },
+                    "Obs Vetting": { cor: "vermelho", obs: "Todas fechadas" }
+                }
+            },
+            "ZUMBI DOS PALMARES": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "CELSO FURTADO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "SERGIO BUARQUE DE HOLANDA": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "ROMULO ALMEIDA": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "JOSE ALENCAR": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "LUCIO COSTA": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "DARCY RIBEIRO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "BARBOSA LIMA SOBRINHO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "OSCAR NIEMEYER": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "GILBERTO FREYRE": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            },
+            "JORGE AMADO": {
+                equipamentos: {
+                    "Motor principal": { cor: "cinza", obs: "" },
+                    "MCAs": { cor: "cinza", obs: "" },
+                    "Grupo destilatório": { cor: "cinza", obs: "" },
+                    "Equip. fundeio, amarração e guindastes": { cor: "cinza", obs: "" },
+                    "Caldeira auxiliar": { cor: "cinza", obs: "" },
+                    "DGE E BBA incêndio emergência": { cor: "cinza", obs: "" },
+                    "Sistema de carga e descarga": { cor: "cinza", obs: "" },
+                    "Máquina do leme": { cor: "cinza", obs: "" },
+                    "Purificadores": { cor: "cinza", obs: "" },
+                    "Sistemas de navegação": { cor: "cinza", obs: "" },
+                    "Estado geral convés": { cor: "cinza", obs: "" },
+                    "Estado geral PM": { cor: "cinza", obs: "" }
+                },
+                pessoal: {
+                    "Trifix %": { cor: "cinza", obs: "" },
+                    "Tripulantes vencidos": { cor: "cinza", obs: "" },
+                    "Crew Matrix": { cor: "cinza", obs: "" },
+                    "Certificação de Tripulante": { cor: "cinza", obs: "" }
+                },
+                certificacao: {
+                    "Pendência de Documentação Navio": { cor: "cinza", obs: "" },
+                    "Condição de classe": { cor: "cinza", obs: "" },
+                    "Obs Vetting": { cor: "cinza", obs: "" }
+                }
+            }
+        }
+        function gerarStatusAleatorio() {
+            const cores = ["verde", "verde", "verde", "verde", "verde", "verde", "verde", "verde"];
+
+            const obsEquipamentos = {
+                amarelo: [
+                    "Manutenção programada",
+                    "Em monitoramento",
+                    "Inspeção agendada",
+                    "Desgaste no limite",
+                    "Ajuste necessário"
+                ],
+                vermelho: [
+                    "Inoperante",
+                    "Reparo urgente",
+                    "Fora dos parâmetros",
+                    "Em manutenção",
+                    "Substituição pendente"
+                ]
+            };
+
+            const obsPessoal = {
+                amarelo: [
+                    "Trifix entre 50% e 79%",
+                    "4-10 vencendo",
+                    "Vencendo",
+                    "Treinamentos pendentes"
+                ],
+                vermelho: [
+                    "Trifix abaixo de 50% - crítico",
+                    ">10 vencidos",
+                    "Crew incompleto",
+                    "Vencidas"
+                ]
+            };
+
+            const obsCertificacao = {
+                amarelo: [
+                    "Renovação pendente",
+                    "7-12 observações",
+                    "Prazo próximo",
+                    "Aguardando emissão"
+                ],
+                vermelho: [
+                    "Vencida",
+                    ">12 observações",
+                    "Prazo vencido",
+                    "Pendência crítica"
+                ]
+            };
+
+            return function (item, categoria) {
+                const cor = cores[Math.floor(Math.random() * cores.length)];
+                let obs = "";
+
+                if (cor !== "verde") {
+                    let obsLista;
+                    if (categoria === "equipamentos") {
+                        obsLista = obsEquipamentos[cor];
+                    } else if (categoria === "pessoal") {
+                        obsLista = obsPessoal[cor];
+                    } else {
+                        obsLista = obsCertificacao[cor];
+                    }
+                    obs = obsLista[Math.floor(Math.random() * obsLista.length)];
+                }
+
+                return { cor, obs };
+            };
+        }
+
+        // Cache para armazenar status gerados aleatoriamente (persiste até F5)
+        const statusCache = {};
+
+        function getStatusNavio(nomeNavio) {
+            // Se tem dados específicos, usa eles
+            if (statusDetalhesNavios[nomeNavio]) {
+                return statusDetalhesNavios[nomeNavio];
+            }
+
+            // Se já gerou aleatório para este navio, retorna do cache
+            if (statusCache[nomeNavio]) {
+                return statusCache[nomeNavio];
+            }
+
+            // Gera aleatório e salva no cache
+            const gerador = gerarStatusAleatorio();
+            const equipamentosItems = [
+                "Motor principal", "MCAs", "Grupo destilatório",
+                "Equip. fundeio, amarração e guindastes", "Caldeira auxiliar",
+                "DGE E BBA incêndio emergência", "Sistema de carga e descarga",
+                "Máquina do leme", "Purificadores", "Sistemas de navegação",
+                "Estado geral convés", "Estado geral PM"
+            ];
+            const pessoalItems = ["Trifix %", "Tripulantes vencidos", "Crew Matrix", "Certificação de Tripulante"];
+            const certificacaoItems = ["Pendência de Documentação Navio", "Condição de classe", "Obs Vetting"];
+
+            const status = { equipamentos: {}, pessoal: {}, certificacao: {} };
+
+            equipamentosItems.forEach(item => { status.equipamentos[item] = gerador(item, "equipamentos"); });
+            pessoalItems.forEach(item => { status.pessoal[item] = gerador(item, "pessoal"); });
+            certificacaoItems.forEach(item => { status.certificacao[item] = gerador(item, "certificacao"); });
+
+            // Salva no cache
+            statusCache[nomeNavio] = status;
+
+            return status;
+        }
+
+        // Calcula status resumido por categoria (Equipamentos, Pessoal, Certificação)
+        function calcularStatusResumo(nomeNavio) {
+            // Se temos dados do SharePoint para este navio, usar
+            if (dadosSharePoint && dadosSharePoint[nomeNavio]) {
+                return processarDadosNavioSharePoint(dadosSharePoint[nomeNavio]);
+            }
+
+            // Usar os mesmos dados detalhados que aparecem no perfil do navio
+            const statusDetalhado = getStatusNavio(nomeNavio);
+
+            if (statusDetalhado) {
+                // Função para calcular pior cor de uma categoria
+                const calcularPiorCategoria = (categoria) => {
+                    if (!categoria || Object.keys(categoria).length === 0) {
+                        return 'gray';
+                    }
+
+                    let temVermelho = false;
+                    let temAmarelo = false;
+                    let temCinza = false;
+
+                    Object.values(categoria).forEach(item => {
+                        const cor = item.cor || item;
+                        if (cor === 'vermelho' || cor === 'red') temVermelho = true;
+                        else if (cor === 'amarelo' || cor === 'yellow') temAmarelo = true;
+                        else if (cor === 'cinza' || cor === 'gray') temCinza = true;
+                    });
+
+                    // Prioridade: cinza > vermelho > amarelo > verde
+                    if (temCinza) return 'gray';
+                    if (temVermelho) return 'red';
+                    if (temAmarelo) return 'yellow';
+                    return 'green';
+                };
+
+                const corEquipamentos = calcularPiorCategoria(statusDetalhado.equipamentos);
+                const corPessoal = calcularPiorCategoria(statusDetalhado.pessoal);
+                const corCertificacao = calcularPiorCategoria(statusDetalhado.certificacao);
+
+                return [corEquipamentos, corPessoal, corCertificacao];
+            }
+
+            // Fallback: retorna cinza se não tiver dados
+            return ['gray', 'gray', 'gray'];
+        }
+
+        function gerarItemCategoria(nome, status) {
+            const { cor, obs } = status;
+            const temObs = (cor === "amarelo" || cor === "vermelho") && obs;
+            const obsClass = temObs ? "tem-obs" : "";
+
+            let html = `<div class="categoria-item-wrapper">`;
+            html += `<div class="categoria-item ${cor} ${obsClass}" 
+                         data-obs="${temObs ? obs.replace(/"/g, '&quot;') : ''}"
+                         data-cor="${cor}">
+                         ${nome}
+                     </div>`;
+
+            if (temObs) {
+                const tipoObs = cor === "amarelo" ? "obs-amarelo" : "obs-vermelho";
+                const icone = cor === "amarelo" ? "📝" : "⚠️";
+                const titulo = cor === "amarelo" ? "Observação" : "Atenção";
+                html += `<div class="tooltip-obs ${tipoObs}">
+                    <div class="tooltip-obs-header">${icone} ${titulo}</div>
+                    <div class="tooltip-obs-texto">${obs}</div>
+                </div>`;
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        let tooltipFixoAtual = null;
+
+        function configurarTooltips() {
+            document.querySelectorAll('.categoria-item.tem-obs').forEach(item => {
+                const wrapper = item.parentElement;
+                const tooltip = wrapper.querySelector('.tooltip-obs');
+
+                if (!tooltip) return;
+
+                function ajustarPosicaoTooltip() {
+                    tooltip.classList.remove('tooltip-esquerda');
+
+                    tooltip.style.visibility = 'hidden';
+                    tooltip.style.opacity = '0';
+                    tooltip.style.display = 'block';
+
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const windowWidth = window.innerWidth;
+
+                    if (tooltipRect.right > windowWidth - 20) {
+                        tooltip.classList.add('tooltip-esquerda');
+                    }
+
+                    tooltip.style.visibility = '';
+                    tooltip.style.opacity = '';
+                    tooltip.style.display = '';
+                }
+
+                item.addEventListener('mouseenter', function () {
+                    if (!tooltip.classList.contains('fixo')) {
+                        ajustarPosicaoTooltip();
+                        tooltip.classList.add('visible');
+                    }
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    if (!tooltip.classList.contains('fixo')) {
+                        tooltip.classList.remove('visible');
+                    }
+                });
+
+                item.addEventListener('click', function (e) {
+                    e.stopPropagation();
+
+                    if (tooltipFixoAtual && tooltipFixoAtual !== tooltip) {
+                        tooltipFixoAtual.classList.remove('fixo');
+                        tooltipFixoAtual.classList.remove('visible');
+                    }
+
+                    if (tooltip.classList.contains('fixo')) {
+                        tooltip.classList.remove('fixo');
+                        tooltip.classList.remove('visible');
+                        tooltipFixoAtual = null;
+                    } else {
+                        ajustarPosicaoTooltip();
+                        tooltip.classList.add('fixo');
+                        tooltip.classList.add('visible');
+                        tooltipFixoAtual = tooltip;
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (tooltipFixoAtual && !e.target.closest('.categoria-item-wrapper')) {
+                tooltipFixoAtual.classList.remove('fixo');
+                tooltipFixoAtual.classList.remove('visible');
+                tooltipFixoAtual = null;
+            }
+        });
+
+        function calculateShipAge(shipName) {
+            const birthDateStr = shipBirthDates[shipName.toUpperCase()];
+            if (!birthDateStr) return { years: '-', days: '-' };
+
+            const parts = birthDateStr.split('/');
+            const birthDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            const today = new Date();
+
+            const diffTime = today - birthDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffYears = Math.floor(diffDays / 365.25);
+
+            return { years: diffYears, days: diffDays };
+        }
+
+        // Variável global para armazenar dados do SharePoint
+        let dadosSharePoint = {};
+
+        const naviosReais = [
+            // PANAMAX (1)
+            { nome: "ANITA GARIBALDI", classe: "Panamax" },
+
+            // AFRAMAX (5)
+            { nome: "CASTRO ALVES", classe: "Aframax" },
+            { nome: "CARLOS DRUMMOND DE ANDRADE", classe: "Aframax" },
+            { nome: "OLAVO BILAC", classe: "Aframax" },
+            { nome: "GARRINCHA", classe: "Aframax" },
+            { nome: "PORTINARI", classe: "Aframax" },
+
+            // SUEZMAX (10)
+            { nome: "JOAO CANDIDO", classe: "Suezmax" },
+            { nome: "DRAGAO DO MAR", classe: "Suezmax" },
+            { nome: "HENRIQUE DIAS", classe: "Suezmax" },
+            { nome: "ANDRE REBOUCAS", classe: "Suezmax" },
+            { nome: "MARCILIO DIAS", classe: "Suezmax" },
+            { nome: "JOSE DO PATROCINIO", classe: "Suezmax" },
+            { nome: "MACHADO DE ASSIS", classe: "Suezmax" },
+            { nome: "MILTON SANTOS", classe: "Suezmax" },
+            { nome: "ABDIAS NASCIMENTO", classe: "Suezmax" },
+            { nome: "ZUMBI DOS PALMARES", classe: "Suezmax" },
+
+            // PRODUTOS (4)
+            { nome: "CELSO FURTADO", classe: "Produtos" },
+            { nome: "SERGIO BUARQUE DE HOLANDA", classe: "Produtos" },
+            { nome: "ROMULO ALMEIDA", classe: "Produtos" },
+            { nome: "JOSE ALENCAR", classe: "Produtos" },
+
+            // GASEIRO 7K (4)
+            { nome: "LUCIO COSTA", classe: "Gaseiro 7k" },
+            { nome: "DARCY RIBEIRO", classe: "Gaseiro 7k" },
+            { nome: "BARBOSA LIMA SOBRINHO", classe: "Gaseiro 7k" },
+            { nome: "OSCAR NIEMEYER", classe: "Gaseiro 7k" },
+
+            // GASEIRO 4K (2)
+            { nome: "GILBERTO FREYRE", classe: "Gaseiro 4k" },
+            { nome: "JORGE AMADO", classe: "Gaseiro 4k" }
+        ];
+
+        // Status inicial — todos cinza até dados do SharePoint chegarem
+        const statusExemplosFixos = {
+            "ANITA GARIBALDI": ['gray', 'gray', 'gray'],
+            "CASTRO ALVES": ['gray', 'gray', 'gray'],
+            "CARLOS DRUMMOND DE ANDRADE": ['gray', 'gray', 'gray'],
+            "OLAVO BILAC": ['gray', 'gray', 'gray'],
+            "GARRINCHA": ['gray', 'gray', 'gray'],
+            "PORTINARI": ['gray', 'gray', 'gray'],
+            "JOAO CANDIDO": ['gray', 'gray', 'gray'],
+            "DRAGAO DO MAR": ['gray', 'gray', 'gray'],
+            "HENRIQUE DIAS": ['gray', 'gray', 'gray'],
+            "ANDRE REBOUCAS": ['gray', 'gray', 'gray'],
+            "MARCILIO DIAS": ['gray', 'gray', 'gray'],
+            "JOSE DO PATROCINIO": ['gray', 'gray', 'gray'],
+            "MACHADO DE ASSIS": ['gray', 'gray', 'gray'],
+            "MILTON SANTOS": ['gray', 'gray', 'gray'],
+            "ABDIAS NASCIMENTO": ['gray', 'gray', 'gray'],
+            "ZUMBI DOS PALMARES": ['gray', 'gray', 'gray'],
+            "CELSO FURTADO": ['gray', 'gray', 'gray'],
+            "SERGIO BUARQUE DE HOLANDA": ['gray', 'gray', 'gray'],
+            "ROMULO ALMEIDA": ['gray', 'gray', 'gray'],
+            "JOSE ALENCAR": ['gray', 'gray', 'gray'],
+            "LUCIO COSTA": ['gray', 'gray', 'gray'],
+            "DARCY RIBEIRO": ['gray', 'gray', 'gray'],
+            "BARBOSA LIMA SOBRINHO": ['gray', 'gray', 'gray'],
+            "OSCAR NIEMEYER": ['gray', 'gray', 'gray'],
+            "GILBERTO FREYRE": ['gray', 'gray', 'gray'],
+            "JORGE AMADO": ['gray', 'gray', 'gray']
+        };
+tml>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>Estado Geral Dos Navios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 30px;
+        }
+
+        .header-logo {
+            flex-shrink: 0;
+        }
+
+        .header-logo img {
+            height: 90px;
+            width: auto;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            padding-right: 90px;
+            /* Compensa a largura da logo para centralizar */
+        }
+
+        .header h1 {
+            font-size: 52px;
+            font-weight: 300;
+            letter-spacing: 10px;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 0;
+            line-height: 1.15;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .header h1 img.logo-transpetro {
+            display: none;
+        }
+
+        .header h1 span {
+            display: inline;
+        }
+
+        .header .subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 15px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-weight: 300;
+            text-align: center;
+        }
+
+        /* Botão Home no canto superior direito */
+        .home-button-container {
+            position: absolute;
+            right: 25px;
+            top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-home {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn-home:hover {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            transform: scale(1.1);
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-home:active {
+            transform: scale(0.95);
+        }
+
+        .btn-privacy.active {
+            background: rgba(231, 76, 60, 0.6);
+        }
+
+        .btn-privacy.active:hover {
+            background: rgba(231, 76, 60, 0.8);
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-sort.active {
+            background: rgba(46, 160, 67, 0.6);
+        }
+
+        .btn-sort.active:hover {
+            background: rgba(46, 160, 67, 0.8) !important;
+            box-shadow: 0 4px 20px rgba(46, 160, 67, 0.4) !important;
+        }
+
+        .btn-home svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-home:hover svg {
+            transform: scale(1.1);
+        }
+
+        .btn-home .tooltip-home {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-home .tooltip-home::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-home:hover .tooltip-home {
+            opacity: 1;
+            visibility: visible;
+            bottom: -40px;
+        }
+
+        /* Tooltip do botão Home aparece em CIMA */
+        #btnHome .tooltip-home {
+            bottom: auto;
+            top: -35px;
+        }
+
+        #btnHome .tooltip-home::before {
+            top: auto;
+            bottom: -6px;
+            border-bottom-color: transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+        }
+
+        #btnHome:hover .tooltip-home {
+            bottom: auto;
+            top: -40px;
+        }
+
+        .filter-dropdown-container {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .filter-dropdown-container.compact-mode {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .filter-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(44, 62, 80, 0.98);
+            border: 2px solid rgba(52, 152, 219, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 2000;
+            display: none;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .filter-popup.active {
+            display: block;
+        }
+
+        .filter-popup-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-popup-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-popup-item:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+
+        .filter-popup-item.active {
+            background: rgba(52, 152, 219, 0.6);
+            font-weight: 600;
+        }
+
+        /* Chips de filtro múltiplo */
+        .filter-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip:hover {
+            background: rgba(52, 152, 219, 0.3);
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+
+        .filter-chip.active {
+            background: rgba(52, 152, 219, 0.6);
+            border-color: #3498db;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .filter-chip .chip-count {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+
+        .filter-chip.active .chip-count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Chips de grupo (Longo Curso / Cabotagem) */
+        .filter-chip.grupo {
+            border-style: dashed;
+            border-color: rgba(255, 193, 7, 0.4);
+            color: rgba(255, 193, 7, 0.9);
+            font-style: italic;
+        }
+
+        .filter-chip.grupo:hover {
+            background: rgba(255, 193, 7, 0.15);
+            border-color: rgba(255, 193, 7, 0.7);
+        }
+
+        .filter-chip.grupo.active {
+            background: rgba(255, 193, 7, 0.25);
+            border-color: rgba(255, 193, 7, 0.9);
+            color: #ffc107;
+        }
+
+        .filter-chip.grupo.active .chip-count {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Separador entre grupos e classes individuais */
+        .filter-chips-separator {
+            width: 100%;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 2px 0;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .filter-btn-apply {
+            flex: 1;
+            padding: 10px;
+            background: rgba(39, 174, 96, 0.7);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn-apply:hover {
+            background: rgba(39, 174, 96, 1);
+        }
+
+        .filter-btn-clear {
+            padding: 10px 15px;
+            background: rgba(127, 140, 141, 0.5);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn-clear:hover {
+            background: rgba(127, 140, 141, 0.8);
+        }
+
+        .filter-popup-close {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(192, 57, 43, 0.7);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-popup-close:hover {
+            background: rgba(192, 57, 43, 1);
+        }
+
+        .filter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+            display: none;
+        }
+
+        .filter-overlay.active {
+            display: block;
+        }
+
+        .filter-dropdown-btn {
+            padding: 10px 15px;
+            background: rgba(108, 117, 125, 0.3);
+            border: 2px solid rgba(108, 117, 125, 0.5);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .filter-dropdown-btn.compact-mode {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .filter-dropdown-btn:hover {
+            background: rgba(108, 117, 125, 0.5);
+            transform: scale(1.02);
+        }
+
+        .filter-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 0px;
+            background: rgba(44, 62, 80, 0.95);
+            border: 2px solid rgba(108, 117, 125, 0.5);
+            border-radius: 8px;
+            padding: 10px 0;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .filter-dropdown-menu.active {
+            display: block;
+        }
+
+        .filter-dropdown-item {
+            padding: 10px 20px;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-dropdown-item:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+
+        .filter-dropdown-item.active {
+            background: rgba(52, 152, 219, 0.5);
+            font-weight: 600;
+        }
+
+        .filter-dropdown-item .count {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-left: 10px;
+        }
+
+        .filter-dropdown-item.active::before {
+            content: "✓ ";
+            margin-right: 5px;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-message.success {
+            border: 2px solid #00B050;
+        }
+
+        .status-message.error {
+            border: 2px solid #FF0000;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .legend-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-circle.green {
+            background: #00B050;
+        }
+
+        .legend-circle.yellow {
+            background: #FFC000;
+        }
+
+        .legend-circle.red {
+            background: #FF0000;
+        }
+
+        .legend-circle.gray {
+            background: #808080;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard.compact {
+            grid-template-columns: 1fr;
+        }
+
+        /* Novo layout para modo Lista de Navios */
+        .dashboard.list-mode {
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+
+        .ship-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 950px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .ship-list.compact {
+            display: none;
+        }
+
+        .ship-list.list-mode {
+            display: block;
+            max-height: 750px;
+            padding: 15px;
+        }
+
+        /* Painel de detalhes do navio */
+        .ship-detail-panel {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            color: #333;
+            min-height: 750px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .ship-detail-panel.active {
+            display: block;
+        }
+
+        .ship-detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .ship-detail-title {
+            background: #fff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            border-radius: 5px;
+        }
+
+        .ship-detail-indicators {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .indicator-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .indicator-circle.green {
+            background: linear-gradient(135deg, #00B050 0%, #008040 100%);
+            border: 4px solid #006030;
+        }
+
+        .indicator-circle.yellow {
+            background: linear-gradient(135deg, #FFC000 0%, #E0A000 100%);
+            border: 4px solid #C08000;
+        }
+
+        .indicator-circle.red {
+            background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+            border: 4px solid #990000;
+        }
+
+        .indicator-circle .indicator-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .indicator-circle .indicator-value {
+            font-size: 28px;
+        }
+
+        .indicator-box {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+        }
+
+        .indicator-box .box-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .indicator-box .box-value {
+            font-size: 14px;
+            color: #666;
+            margin-top: 0px;
+        }
+
+        .ship-detail-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .detail-section {
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 350px;
+        }
+
+        .section-title {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin: -35px auto 20px auto;
+            width: fit-content;
+            color: #333;
+        }
+
+        .section-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            color: white;
+            cursor: default;
+            transition: transform 0.2s ease;
+        }
+
+        .section-item:hover {
+            transform: scale(1.02);
+        }
+
+        .section-item.green {
+            background: #00B050;
+        }
+
+        .section-item.yellow {
+            background: #FFC000;
+            color: #333;
+        }
+
+        .section-item.red {
+            background: #FF0000;
+        }
+
+        .section-item.gray {
+            background: #808080;
+        }
+
+        /* Placeholder quando nenhum navio está selecionado */
+        .detail-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 500px;
+            color: #999;
+            text-align: center;
+        }
+
+        .detail-placeholder-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .detail-placeholder-text {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .detail-placeholder-subtext {
+            font-size: 14px;
+            margin-top: 0px;
+            opacity: 0.7;
+        }
+
+        .ship-item.selected {
+            background: rgba(52, 152, 219, 0.3);
+            border-left-color: #3498db;
+            border-left-width: 4px;
+        }
+
+        .ship-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .ship-item.compact-mode {
+            padding: 6px 10px;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .ship-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #95a5a6;
+            transform: translateX(5px);
+        }
+
+        .ship-item.active {
+            background: rgba(149, 165, 166, 0.2);
+            border-left-color: #95a5a6;
+        }
+
+        .systems-grid {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 950px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .systems-grid.compact {
+            max-height: none;
+            overflow-y: visible;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Modo ultra compacto - 3 colunas */
+        .systems-grid.compact.ultra-compact {
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .systems-grid.compact.ultra-compact .compact-column-header {
+            padding: 6px 8px;
+            min-height: 30px;
+            display: flex !important;
+            align-items: center;
+        }
+
+        /* Ocultar header IDADE no modo 3 colunas */
+        .systems-grid.compact.ultra-compact .compact-header-idade {
+            display: none !important;
+        }
+
+        .systems-grid.compact.ultra-compact .ship-row.compact-mode {
+            padding: 4px 6px;
+            min-height: 40px;
+            grid-template-columns: 1fr auto;
+        }
+
+        .systems-grid.compact.ultra-compact .ship-name.compact-mode {
+            font-size: 11px;
+            width: auto;
+            min-width: 120px;
+        }
+
+        .systems-grid.compact.ultra-compact .ship-class {
+            font-size: 7px;
+        }
+
+        /* Ocultar idade no modo 3 colunas */
+        .systems-grid.compact.ultra-compact .compact-ship-info {
+            display: none !important;
+        }
+
+        .systems-grid.compact.ultra-compact .status-indicators {
+            gap: 10px;
+        }
+
+        .systems-grid.compact.ultra-compact .status-indicator {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Modo privacy - ocultar tripulação e manter layout correto */
+        .systems-grid.compact.privacy-compact .crew-section {
+            display: none !important;
+        }
+
+        .systems-grid.compact.privacy-compact .crew-header-section {
+            display: none !important;
+        }
+
+        /* ── MODO 2: olho com X (privacy-compact sem ultra-compact) ────────────
+           Barra divisória à direita da IDADE no header e nas linhas de dados. */
+        .systems-grid.compact.privacy-compact:not(.ultra-compact) .compact-header-section.compact-header-idade {
+            border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .systems-grid.compact.privacy-compact:not(.ultra-compact) .compact-text-section.idade-section {
+            border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Modo 3: sem barra divisória no header */
+        .systems-grid.compact.ultra-compact .compact-header-name {
+            border-right: none !important;
+        }
+
+
+
+        .column-container {
+            display: contents;
+        }
+
+        .systems-grid.compact .column-container {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Remover linhas contínuas - agora todas serão tracejadas */
+
+        /* Wrapper para adicionar linhas tracejadas */
+        .systems-grid.compact .ship-row.compact-mode {
+            position: relative;
+        }
+
+        .systems-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .systems-grid.compact {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .compact-column-header {
+            display: none;
+        }
+
+        .systems-grid.compact .compact-column-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 8px 8px 10px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            min-height: 40px;
+            position: relative;
+            position: relative;
+        }
+
+        .systems-grid.compact .compact-column-header .classe-filter-badge {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Badge no modo ultra-compact */
+        .systems-grid.compact.ultra-compact .compact-column-header .classe-filter-badge {
+            position: static;
+            transform: none;
+            justify-self: end;
+            margin-right: 5px;
+        }
+
+        .compact-header-name {
+            width: 110px;
+            min-width: 110px;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-right: 10px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Header name no modo ultra-compact */
+        .systems-grid.compact.ultra-compact .compact-header-name {
+            width: auto;
+            min-width: auto;
+            justify-content: flex-start;
+            padding-left: 5px;
+        }
+
+        /* Modo privacidade completa - ocultar colunas de tripulação */
+        .privacy-hidden {
+            display: none !important;
+        }
+
+        .compact-header-section {
+            flex: 0 0 auto;
+            width: 90px;
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            position: relative;
+            cursor: help;
+            transition: all 0.3s ease;
+        }
+
+        .compact-header-idade {
+            width: 55px !important;
+        }
+
+        /* Header IDADE no modo ultra-compact */
+        .systems-grid.compact.ultra-compact .compact-header-idade {
+            width: 45px !important;
+            text-align: center;
+        }
+
+        .compact-header-section:hover {
+            color: #3498db;
+            transform: scale(1.05);
+        }
+
+        /* Tooltip customizado para headers */
+        .compact-header-section[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: tooltipFadeIn 0.3s ease;
+            letter-spacing: 0.3px;
+            text-transform: none;
+        }
+
+        /* Seta do tooltip */
+        .compact-header-section[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-2px);
+            border: 6px solid transparent;
+            border-top-color: #667eea;
+            z-index: 999;
+            animation: tooltipFadeIn 0.3s ease;
+        }
+
+        @keyframes tooltipFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-8px);
+            }
+        }
+
+        .compact-header-indicators {
+            flex: 1;
+            height: 100%;
+        }
+
+        /* Seções de texto para CMT, CFM, IMT */
+        .compact-ship-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+        }
+
+        .compact-text-section {
+            flex: 0 0 auto;
+            width: 90px;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 0 5px;
+            overflow: visible;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.3;
+        }
+
+        /* ===== DIVISÓRIAS DAS COLUNAS (CMT, CFM, IMT) ===== */
+        /* Borda direita no nome do navio */
+        .ship-row.compact-mode .ship-name.compact-mode {
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding-right: 10px;
+            margin-right: 5px;
+        }
+
+        /* Bordas nas seções de texto (CMT, CFM, IMT) */
+        .compact-text-section {
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .compact-text-section:last-child {
+            border-right: none;
+        }
+
+        /* Estilo para células de tripulação (nome + chave) */
+        .crew-section {
+            line-height: 1.3;
+            padding: 4px 5px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crew-section br+* {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+
+        /* Bordas nos headers */
+        .compact-header-name {
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Ícone de filtro no header */
+        .compact-header-name {
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .compact-header-name:hover {
+            color: #3498db;
+        }
+
+        .compact-header-name:hover .filter-icon-header {
+            opacity: 1 !important;
+        }
+
+        .filter-icon-header {
+            transition: opacity 0.2s ease;
+        }
+
+        /* Estilo quando filtro de classe está ativo */
+        .compact-header-name.filter-active {
+            color: #3498db;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .compact-header-name.filter-active .filter-icon-header {
+            opacity: 1 !important;
+            fill: #3498db;
+        }
+
+        /* Badge de classe filtrada no header */
+        .classe-filter-badge {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+            display: none;
+            white-space: nowrap;
+        }
+
+        .classe-filter-badge.active {
+            display: inline-block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+
+        .compact-header-section {
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .compact-header-section:nth-child(5) {
+            border-right: none;
+        }
+
+        /* Tooltip para a coluna IDADE */
+        .idade-section {
+            position: relative;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 5px;
+            width: 55px !important;
+            min-height: 40px;
+        }
+
+        .idade-section:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
+            pointer-events: none;
+        }
+
+        .idade-section:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-2px);
+            border: 6px solid transparent;
+            border-top-color: #667eea;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .ship-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            align-items: center;
+            padding: 15px 20px 15px 25px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .ship-row.compact-mode {
+            padding: 3px 8px 3px 10px;
+            margin-bottom: 2px;
+            grid-template-columns: 110px 220px 1fr;
+            min-height: 50px;
+            align-items: center;
+            cursor: default;
+        }
+
+        .ship-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.01);
+        }
+
+        .ship-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .ship-name:hover {
+            color: #3498db;
+            text-decoration: underline;
+        }
+
+        .ship-name.compact-mode {
+            font-size: 11px;
+            gap: 1px;
+            line-height: 1.2;
+            overflow: visible;
+            text-overflow: clip;
+            white-space: normal;
+            max-width: 110px;
+            min-width: 110px;
+            word-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 50px;
+        }
+
+        .ship-class {
+            font-size: 10px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+        }
+
+        .ship-name.compact-mode .ship-class {
+            font-size: 9px;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            max-width: 110px;
+            word-wrap: break-word;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 25px;
+            justify-content: flex-start;
+            padding-left: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .status-indicators.compact-mode {
+            gap: 10px;
+            padding-left: 0;
+            justify-content: flex-end;
+            padding-right: 15px;
+            position: relative;
+        }
+
+        .status-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .status-circle.compact-mode {
+            width: 22px;
+            height: 22px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .status-circle.compact-mode:hover {
+            transform: scale(1.15);
+        }
+
+        .status-circle.green {
+            background: #00B050;
+        }
+
+        .status-circle.yellow {
+            background: #FFC000;
+        }
+
+        .status-circle.red {
+            background: #FF0000;
+        }
+
+        .status-circle.gray {
+            background: #808080;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .status-circle:hover .tooltip {
+            display: block;
+        }
+
+        .status-circle.compact-mode .tooltip {
+            font-size: 10px;
+            padding: 5px 10px;
+            bottom: 30px;
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            min-width: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .stat-card.active-filter {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ========== MODO LISTA DE NAVIOS ========== */
+        .lista-navios-container {
+            display: none;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            height: calc(100vh - 180px);
+            min-height: 800px;
+        }
+
+        .lista-navios-container.active {
+            display: grid;
+        }
+
+        .lista-lateral {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        .lista-lateral-titulo {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .navio-item {
+            padding: 12px 15px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .navio-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .navio-item.selected {
+            background: rgba(52, 152, 219, 0.3);
+            border-left-color: #3498db;
+        }
+
+        .navio-item-nome {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .navio-item-classe {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            margin-top: 3px;
+        }
+
+        /* Painel de detalhes */
+        .painel-detalhes {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%);
+            border-radius: 15px;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .painel-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+        }
+
+        .painel-placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .painel-placeholder-texto {
+            font-size: 18px;
+            font-weight: 300;
+        }
+
+        /* Cabeçalho do navio selecionado */
+        .detalhes-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            padding: 20px 0 30px 0;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .navio-titulo-box {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 18px 35px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 22px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .ido-circle {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c5f5f 0%, #3d7878 100%);
+            border: 5px solid #1a4040;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+
+        .ido-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ido-valor {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        .info-cards-header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 15px 25px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-cards-header p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .info-cards-header strong {
+            font-weight: 700;
+        }
+
+        /* Seções de categorias */
+        .categorias-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 0px;
+        }
+
+        .categoria-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 25px 20px 20px 20px;
+            min-height: 550px;
+            transition: all 0.3s ease;
+        }
+
+        .categoria-box.categoria-destacada {
+            border: 3px solid #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
+            background: rgba(52, 152, 219, 0.15);
+            transform: scale(1.02);
+        }
+
+        .categoria-titulo {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            margin-top: -35px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .categoria-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .categoria-item {
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #ffffff;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .categoria-item.verde {
+            background: #27ae60;
+        }
+
+        .categoria-item.amarelo {
+            background: #f1c40f;
+            color: #1a1a2e;
+        }
+
+        .categoria-item.vermelho {
+            background: #e74c3c;
+        }
+
+        .categoria-item.cinza {
+            background: #7f8c8d;
+        }
+
+        .categoria-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .categoria-item-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+        .categoria-item.tem-obs {
+            cursor: pointer;
+            padding-right: 30px;
+        }
+
+        .categoria-item.tem-obs::after {
+            content: "ℹ️";
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .tooltip-obs {
+            position: absolute;
+            left: calc(100% + 15px);
+            top: 50%;
+            transform: translateY(-50%);
+            min-width: 280px;
+            max-width: 320px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #ffffff;
+            line-height: 1.5;
+            z-index: 2000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            pointer-events: none;
+        }
+
+        .tooltip-obs.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .tooltip-obs.obs-amarelo {
+            background: linear-gradient(135deg, #a67c00 0%, #7a5c00 100%);
+            border: 2px solid #FFC000;
+        }
+
+        .tooltip-obs.obs-vermelho {
+            background: linear-gradient(135deg, #b02a2a 0%, #8a1f1f 100%);
+            border: 2px solid #FF4444;
+        }
+
+        .tooltip-obs-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .tooltip-obs-texto {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .tooltip-obs::before {
+            content: "";
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 10px solid transparent;
+        }
+
+        .tooltip-obs.obs-amarelo::before {
+            border-right-color: #a67c00;
+        }
+
+        .tooltip-obs.obs-vermelho::before {
+            border-right-color: #b02a2a;
+        }
+
+        .tooltip-obs.tooltip-esquerda {
+            left: auto;
+            right: calc(100% + 15px);
+        }
+
+        .tooltip-obs.tooltip-esquerda::before {
+            right: auto;
+            left: 100%;
+            border-right-color: transparent !important;
+        }
+
+        .tooltip-obs.tooltip-esquerda.obs-amarelo::before {
+            border-left-color: #a67c00;
+        }
+
+        .tooltip-obs.tooltip-esquerda.obs-vermelho::before {
+            border-left-color: #b02a2a;
+        }
+
+        @media (max-width: 1400px) {
+            .categorias-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .categorias-container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -3846,6 +7102,8 @@
 
             if (!dados || dados.length === 0) {
                 console.warn('⚠️ Não foi possível carregar dados do SharePoint. Usando dados de exemplo.');
+                const overlayErr = document.getElementById('loadingOverlay');
+                if (overlayErr) { overlayErr.classList.add('fadeout'); setTimeout(() => overlayErr.remove(), 450); }
                 return false;
             }
 
@@ -3873,7 +7131,6 @@
             });
 
             // Após selecionar o mais recente de cada navio, atualizar painéis
-            console.log('📋 Navios selecionados:', Object.keys(dadosSharePoint));
             Object.entries(dadosSharePoint).forEach(([nomeNavio, item]) => {
                 // Atualizar painel de detalhes (obs + cores de todos os campos)
                 atualizarDetalhesNavio(nomeNavio, item);
@@ -3884,6 +7141,13 @@
             });
 
             console.log(`📊 Dados processados para ${Object.keys(dadosSharePoint).length} navios`);
+
+            // Remover overlay de carregamento
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.add('fadeout');
+                setTimeout(() => overlay.remove(), 450);
+            }
 
             // Re-renderizar e reaplicar sort+filtros
             renderSystemsGrid();
