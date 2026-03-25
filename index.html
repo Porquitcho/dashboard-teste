@@ -559,9 +559,7 @@
             background: #1565c0;
         }
 
-        .stat-card.manutencao {
-            border-top: 3px solid #1565c0;
-        }
+
 
         .dashboard {
             display: grid;
@@ -4027,26 +4025,25 @@
             return 'green';
         }
 
-        // Verifica se um navio está em manutenção
+        // Verifica se um navio está em manutenção/docagem
         function eNavioManutencao(nomeNavio) {
             const raw = dadosSharePoint[nomeNavio];
             if (!raw) return false;
-            const s = raw.Status;
+            return _isManutencao(raw.Status);
+        }
+
+        // Helper: normaliza o campo Status e verifica se é manutenção
+        function _isManutencao(s) {
             if (!s) return false;
             const val = (typeof s === 'object' ? (s.Value || s.value || '') : String(s)).toLowerCase().trim();
-            return val.includes('manuten');
+            return val.includes('manuten') || val.includes('docagem');
         }
 
         // Processa um registro do SharePoint e retorna [corEquipamentos, corPessoal, corCertificacao]
         function processarDadosNavioSharePoint(item) {
-            // Se Status = Manutenção → todas as bolinhas azuis
-            if (item.Status) {
-                const sVal = (typeof item.Status === 'object'
-                    ? (item.Status.Value || item.Status.value || '')
-                    : String(item.Status)).toLowerCase().trim();
-                if (sVal.includes('manuten')) {
-                    return ['blue', 'blue', 'blue'];
-                }
+            // Se Status = Em Manutenção ou Docagem → todas as bolinhas azuis
+            if (_isManutencao(item.Status)) {
+                return ['blue', 'blue', 'blue'];
             }
 
             // EQUIPAMENTOS — 12 campos Choice (1/2/3) com nomes exatos do SharePoint
@@ -4201,10 +4198,8 @@
 
         // Atualiza statusDetalhesNavios com obs e cores vindas do SharePoint
         function atualizarDetalhesNavio(nomeNavio, item) {
-            // Verificar se é manutenção — nesse caso todos os itens ficam azuis
-            const isManutencao = item.Status && (typeof item.Status === 'object'
-                ? (item.Status.Value || item.Status.value || '')
-                : String(item.Status)).toLowerCase().trim().includes('manuten');
+            // Verificar se é manutenção/docagem — todos os itens ficam azuis
+            const isManutencao = _isManutencao(item.Status);
 
             // Converte para cor em PORTUGUÊS (verde/amarelo/vermelho/cinza)
             // pois gerarItemCategoria usa esse formato
