@@ -555,6 +555,14 @@
             background: #808080;
         }
 
+        .legend-circle.blue {
+            background: #1565c0;
+        }
+
+        .stat-card.manutencao {
+            border-top: 3px solid #1565c0;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: 200px 1fr;
@@ -658,6 +666,11 @@
             border: 4px solid #990000;
         }
 
+        .indicator-circle.blue {
+            background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+            border: 4px solid #0a2f6e;
+        }
+
         .indicator-circle .indicator-label {
             font-size: 14px;
             margin-bottom: 5px;
@@ -750,6 +763,14 @@
 
         .section-item.gray {
             background: #808080;
+        }
+
+        .section-item.blue {
+            background: #1565c0;
+        }
+
+        .section-item.azul {
+            background: #1565c0;
         }
 
         /* Placeholder quando nenhum navio está selecionado */
@@ -1382,6 +1403,11 @@
             background: #808080;
         }
 
+        .status-circle.blue {
+            background: #1565c0;
+            box-shadow: 0 2px 10px rgba(21,101,192,0.5);
+        }
+
         .tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.9);
@@ -1713,6 +1739,10 @@
             background: #7f8c8d;
         }
 
+        .categoria-item.azul {
+            background: #1565c0;
+        }
+
         .categoria-item:hover {
             transform: scale(1.02);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -1973,35 +2003,24 @@
             <div class="smoke-puff"></div>
         </div>
         <svg width="140" height="90" viewBox="0 0 140 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Casco -->
             <path d="M10 62 L18 75 L122 75 L130 62 Z" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1.5"/>
-            <!-- Linha d'água -->
             <path d="M14 70 L126 70" stroke="#2d6a9f" stroke-width="1" opacity="0.6"/>
-            <!-- Superestrutura traseira -->
             <rect x="25" y="45" width="35" height="18" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1"/>
-            <!-- Superestrutura frente -->
             <rect x="62" y="50" width="40" height="13" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1"/>
-            <!-- Ponte de comando -->
             <rect x="30" y="33" width="25" height="13" rx="2" fill="#245c8a" stroke="#4fc3f7" stroke-width="1"/>
-            <!-- Janelas ponte -->
             <rect x="33" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8"/>
             <rect x="40" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8"/>
             <rect x="47" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
-            <!-- Chaminé -->
             <rect x="38" y="20" width="10" height="14" rx="2" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1"/>
             <rect x="36" y="18" width="14" height="5" rx="1" fill="#c0392b"/>
-            <!-- Mastro -->
             <line x1="75" y1="15" x2="75" y2="50" stroke="#2d6a9f" stroke-width="1.5"/>
-            <!-- Bandeira -->
             <path d="M75 15 L90 20 L75 25 Z" fill="#27ae60" opacity="0.9"/>
-            <!-- Janelas superestrutura -->
             <rect x="28" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
             <rect x="35" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
             <rect x="42" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
             <rect x="65" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
             <rect x="73" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
             <rect x="81" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
-            <!-- Âncora decorativa -->
             <circle cx="20" cy="68" r="3" fill="#2d6a9f" opacity="0.7"/>
         </svg>
     </div>
@@ -2114,6 +2133,11 @@
                 title="Filtrar embarcações com pelo menos 1 categoria crítica">
                 <div class="stat-number" style="color: #FF0000;" id="redCount">0</div>
                 <div class="stat-label">Críticos</div>
+            </div>
+            <div class="stat-card manutencao" id="filterBlue" onclick="filterByColor('blue')"
+                title="Filtrar embarcações em manutenção">
+                <div class="stat-number" style="color: #1565c0;" id="blueCount">0</div>
+                <div class="stat-label">Manutenção</div>
             </div>
             <div class="stat-card" id="filterGray" onclick="filterByColor('gray')"
                 title="Filtrar embarcações com dados pendentes">
@@ -3200,15 +3224,18 @@
                     let temVermelho = false;
                     let temAmarelo = false;
                     let temCinza = false;
+                    let temAzul = false;
 
                     Object.values(categoria).forEach(item => {
                         const cor = item.cor || item;
                         if (cor === 'vermelho' || cor === 'red') temVermelho = true;
                         else if (cor === 'amarelo' || cor === 'yellow') temAmarelo = true;
                         else if (cor === 'cinza' || cor === 'gray') temCinza = true;
+                        else if (cor === 'azul' || cor === 'blue') temAzul = true;
                     });
 
-                    // Prioridade: cinza > vermelho > amarelo > verde
+                    // Prioridade: azul (manutenção) > cinza > vermelho > amarelo > verde
+                    if (temAzul) return 'blue';
                     if (temCinza) return 'gray';
                     if (temVermelho) return 'red';
                     if (temAmarelo) return 'yellow';
@@ -3228,7 +3255,7 @@
 
         function gerarItemCategoria(nome, status) {
             const { cor, obs } = status;
-            const temObs = (cor === "amarelo" || cor === "vermelho") && obs;
+            const temObs = (cor === "amarelo" || cor === "vermelho") && obs && cor !== "azul";
             const obsClass = temObs ? "tem-obs" : "";
 
             let html = `<div class="categoria-item-wrapper">`;
@@ -3448,6 +3475,8 @@
         function eNavioPreenchido(nome) {
             const raw = dadosSharePoint[nome];
             if (!raw) return false;
+            // Manutenção também é considerado preenchido
+            if (eNavioManutencao(nome)) return true;
             // Verificar se tem pelo menos um campo de status não-null
             const campos = ['MotorPrincipal','MCAs','GrupoDestilatorio','EquipeFundeio',
                 'CaldeiraAuxiliar','DGEBBAIncendio','SistemaCargaDesc','MaquinaLeme',
@@ -3656,7 +3685,7 @@
 
         function renderSystemsGrid() {
             const grid = document.getElementById('systemsGrid');
-            let greenTotal = 0, yellowTotal = 0, redTotal = 0, grayTotal = 0;
+            let greenTotal = 0, yellowTotal = 0, redTotal = 0, grayTotal = 0, blueTotal = 0;
 
             grid.innerHTML = '';
 
@@ -3710,6 +3739,7 @@
                     if (status === 'green') greenTotal++;
                     else if (status === 'yellow') yellowTotal++;
                     else if (status === 'red') redTotal++;
+                    else if (status === 'blue') blueTotal++;
                     else if (status === 'gray') grayTotal++;
                 });
 
@@ -3720,6 +3750,7 @@
             document.getElementById('greenCount').textContent = greenTotal;
             document.getElementById('yellowCount').textContent = yellowTotal;
             document.getElementById('redCount').textContent = redTotal;
+            document.getElementById('blueCount').textContent = blueTotal;
             document.getElementById('grayCount').textContent = grayTotal;
         }
 
@@ -3809,7 +3840,9 @@
             // NSE
             'IDOSD', 'ReqOutstanding', 'SRsOutstanding',
             // Tripulação
-            'CMT', 'CMT_MAT', 'CFM', 'CFM_MAT', 'IMT', 'IMT_MAT'
+            'CMT', 'CMT_MAT', 'CFM', 'CFM_MAT', 'IMT', 'IMT_MAT',
+            // Status operacional
+            'Status'
         ].join(',');
 
         // URL da REST API direta (quando hospedado no SharePoint)
@@ -3827,7 +3860,7 @@
             // ── DADOS MOCK com nomes de campo EXATOS do SharePoint ───────────
             if (MODO_TESTE) {
                 console.log('🧪 MODO TESTE ativo — usando dados simulados');
-                const vazio = { MotorPrincipal:null,MCAs:null,GrupoDestilatorio:null,EquipeFundeio:null,CaldeiraAuxiliar:null,DGEBBAIncendio:null,SistemaCargaDesc:null,MaquinaLeme:null,Purificadores:null,SistemasNavegacao:null,EstadoGeralConves:null,EstadoGeralPM:null,TrifixPercentual:null,TripulantesVencidos:null,CrewMatrix:null,CertTripulante:null,PendenciaDoc:null,CondicaoClasse:null,ObsVetting:null,IDOSD:null,ReqOutstanding:null,SRsOutstanding:null,CMT:null,CMT_MAT:null,CFM:null,CFM_MAT:null,IMT:null,IMT_MAT:null };
+                const vazio = { MotorPrincipal:null,MCAs:null,GrupoDestilatorio:null,EquipeFundeio:null,CaldeiraAuxiliar:null,DGEBBAIncendio:null,SistemaCargaDesc:null,MaquinaLeme:null,Purificadores:null,SistemasNavegacao:null,EstadoGeralConves:null,EstadoGeralPM:null,TrifixPercentual:null,TripulantesVencidos:null,CrewMatrix:null,CertTripulante:null,PendenciaDoc:null,CondicaoClasse:null,ObsVetting:null,IDOSD:null,ReqOutstanding:null,SRsOutstanding:null,CMT:null,CMT_MAT:null,CFM:null,CFM_MAT:null,IMT:null,IMT_MAT:null,Status:null };
                 return [
                     { NomeNavio:'ANITA GARIBALDI',          ...vazio },
                     { NomeNavio:'CASTRO ALVES',              ...vazio },
@@ -3987,14 +4020,35 @@
         // Calcula o pior status de um array de cores
         // Prioridade: vermelho > amarelo > verde > cinza (cinza = sem dado)
         function calcularPiorStatus(cores) {
+            if (cores.every(c => c === 'blue')) return 'blue';
             if (cores.every(c => c === 'gray')) return 'gray';
             if (cores.includes('red')) return 'red';
             if (cores.includes('yellow')) return 'yellow';
             return 'green';
         }
 
+        // Verifica se um navio está em manutenção
+        function eNavioManutencao(nomeNavio) {
+            const raw = dadosSharePoint[nomeNavio];
+            if (!raw) return false;
+            const s = raw.Status;
+            if (!s) return false;
+            const val = (typeof s === 'object' ? (s.Value || s.value || '') : String(s)).toLowerCase().trim();
+            return val.includes('manuten');
+        }
+
         // Processa um registro do SharePoint e retorna [corEquipamentos, corPessoal, corCertificacao]
         function processarDadosNavioSharePoint(item) {
+            // Se Status = Manutenção → todas as bolinhas azuis
+            if (item.Status) {
+                const sVal = (typeof item.Status === 'object'
+                    ? (item.Status.Value || item.Status.value || '')
+                    : String(item.Status)).toLowerCase().trim();
+                if (sVal.includes('manuten')) {
+                    return ['blue', 'blue', 'blue'];
+                }
+            }
+
             // EQUIPAMENTOS — 12 campos Choice (1/2/3) com nomes exatos do SharePoint
             const coresEquipamentos = [
                 converterParaCor(item.MotorPrincipal),
@@ -4147,9 +4201,15 @@
 
         // Atualiza statusDetalhesNavios com obs e cores vindas do SharePoint
         function atualizarDetalhesNavio(nomeNavio, item) {
+            // Verificar se é manutenção — nesse caso todos os itens ficam azuis
+            const isManutencao = item.Status && (typeof item.Status === 'object'
+                ? (item.Status.Value || item.Status.value || '')
+                : String(item.Status)).toLowerCase().trim().includes('manuten');
+
             // Converte para cor em PORTUGUÊS (verde/amarelo/vermelho/cinza)
             // pois gerarItemCategoria usa esse formato
             const c = v => {
+                if (isManutencao) return 'azul';
                 const eng = converterParaCor(v);
                 return { green:'verde', yellow:'amarelo', red:'vermelho', gray:'cinza' }[eng] || 'cinza';
             };
@@ -4678,7 +4738,7 @@
         }
 
         function updateFilteredStats() {
-            let greenTotal = 0, yellowTotal = 0, redTotal = 0, grayTotal = 0;
+            let greenTotal = 0, yellowTotal = 0, redTotal = 0, grayTotal = 0, blueTotal = 0;
 
             document.querySelectorAll('.ship-row').forEach((row) => {
                 if (row.style.display !== 'none') {
@@ -4691,6 +4751,7 @@
                             if (status === 'green') greenTotal++;
                             else if (status === 'yellow') yellowTotal++;
                             else if (status === 'red') redTotal++;
+                            else if (status === 'blue') blueTotal++;
                             else if (status === 'gray') grayTotal++;
                         });
                     }
@@ -4700,6 +4761,7 @@
             document.getElementById('greenCount').textContent = greenTotal;
             document.getElementById('yellowCount').textContent = yellowTotal;
             document.getElementById('redCount').textContent = redTotal;
+            document.getElementById('blueCount').textContent = blueTotal;
             document.getElementById('grayCount').textContent = grayTotal;
         }
 
