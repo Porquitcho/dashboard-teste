@@ -4734,24 +4734,18 @@
         }
 
         function updateFilteredStats() {
+            // Sempre conta todos os navios independente do filtro ativo
             let greenTotal = 0, yellowTotal = 0, redTotal = 0, grayTotal = 0, blueTotal = 0;
 
-            document.querySelectorAll('.ship-row').forEach((row) => {
-                if (row.style.display !== 'none') {
-                    const shipNumber = parseInt(row.getAttribute('data-ship-number'));
-                    const navio = naviosReais[shipNumber - 1];
-
-                    if (navio) {
-                        const shipStatus = calcularStatusResumo(navio.nome);
-                        shipStatus.forEach(status => {
-                            if (status === 'green') greenTotal++;
-                            else if (status === 'yellow') yellowTotal++;
-                            else if (status === 'red') redTotal++;
-                            else if (status === 'blue') blueTotal++;
-                            else if (status === 'gray') grayTotal++;
-                        });
-                    }
-                }
+            naviosReais.forEach(navio => {
+                const shipStatus = calcularStatusResumo(navio.nome);
+                shipStatus.forEach(status => {
+                    if (status === 'green') greenTotal++;
+                    else if (status === 'yellow') yellowTotal++;
+                    else if (status === 'red') redTotal++;
+                    else if (status === 'blue') blueTotal++;
+                    else if (status === 'gray') grayTotal++;
+                });
             });
 
             document.getElementById('greenCount').textContent = greenTotal;
