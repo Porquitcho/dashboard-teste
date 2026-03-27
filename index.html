@@ -972,7 +972,7 @@
             border-radius: 8px;
             min-height: 40px;
             position: relative;
-            position: relative;
+            overflow: visible;
         }
 
         .systems-grid.compact .compact-column-header .classe-filter-badge {
@@ -1099,7 +1099,56 @@
 
         .compact-header-indicators {
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
             height: 100%;
+            gap: 0;
+        }
+
+        /* Cada slot de ícone tem largura fixa = mesma das bolinhas (42px) */
+        .compact-header-bolinha {
+            width: 42px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.65);
+            transition: color 0.2s;
+            position: static;
+        }
+        .compact-header-bolinha:hover .compact-header-bolinha-tooltip {
+            display: block;
+        }
+        .compact-header-bolinha:not(:first-child) {
+            border-left: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .compact-header-bolinha:hover {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        /* Tooltip dos ícones — igual ao estilo dos outros cabeçalhos */
+        /* Tooltip dos ícones via JS — ver função abaixo */
+        .icon-tooltip {
+            position: fixed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 999999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            letter-spacing: 0.3px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .icon-tooltip.visible {
+            opacity: 1;
         }
 
         /* Seções de texto para CMT, CFM, IMT */
@@ -1356,11 +1405,25 @@
         }
 
         .status-indicators.compact-mode {
-            gap: 10px;
+            gap: 20px;
             padding-left: 0;
             justify-content: flex-end;
-            padding-right: 15px;
+            padding-right: 16px;
             position: relative;
+        }
+
+        /* Divisória entre bolinhas — sem tocar no tamanho */
+        .status-indicators.compact-mode .status-circle.compact-mode {
+            position: relative;
+        }
+        .status-indicators.compact-mode .status-circle.compact-mode:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: rgba(255,255,255,0.15);
         }
 
         .status-circle {
@@ -2018,6 +2081,10 @@
         }
         
         /* ── MODO APRESENTAÇÃO ── */
+        body.modo-apresentacao,
+        body.modo-apresentacao html {
+            overflow: hidden !important;
+        }
         body.modo-apresentacao .header,
         body.modo-apresentacao #statusMessage,
         body.modo-apresentacao .filter-popup-overlay,
@@ -2030,6 +2097,7 @@
         body.modo-apresentacao .container {
             padding: 10px 12px;
             zoom: var(--apres-zoom, 1);
+            overflow: hidden;
         }
         body.modo-apresentacao .stats {
             margin-top: 8px;
@@ -2037,47 +2105,80 @@
             padding: 8px 12px;
         }
         body.modo-apresentacao .auto-refresh-bar {
-            padding: 2px 0 4px 4px;
+            display: none !important;
         }
-        body.modo-apresentacao .dashboard {
-            height: auto;
-        }
-        body.modo-apresentacao #systemsGrid {
-            overflow-y: auto;
-        }
-
-        /* ── BOTÃO SAIR MODO APRESENTAÇÃO ── */
-        #btnSairApresentacao {
+        /* Balão flutuante do contador no modo apresentação */
+        #autoRefreshFloat {
             position: fixed;
-            bottom: 14px;
-            right: 14px;
-            z-index: 9999;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px;
-            color: rgba(255,255,255,0.55);
-            font-size: 10px;
+            top: 10px;
+            left: 10px;
+            z-index: 999999;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.4);
+            font-size: 9px;
             font-family: 'Segoe UI', sans-serif;
             letter-spacing: 0.5px;
-            padding: 5px 10px;
-            cursor: pointer;
+            padding: 3px 10px 3px 8px;
             display: none;
             align-items: center;
             gap: 5px;
-            transition: all 0.2s;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(2px);
+            transition: all 0.3s;
+        }
+        #autoRefreshFloat:hover {
+            background: rgba(0,0,0,0.5);
+            color: rgba(255,255,255,0.7);
+        }
+        #autoRefreshFloat .refresh-dot {
+            width: 5px;
+            height: 5px;
+        }
+        body.modo-apresentacao .dashboard {
+            height: auto;
+            overflow: hidden;
+        }
+        body.modo-apresentacao #systemsGrid {
+            overflow: visible;
+        }
+
+        /* ── BOTÃO SAIR MODO APRESENTAÇÃO ── */
+        /* Balão flutuante para sair — não ocupa espaço no layout */
+        #btnSairApresentacao {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 999999;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            color: rgba(255,255,255,0.25);
+            font-size: 9px;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s;
+            backdrop-filter: blur(2px);
+            pointer-events: all;
         }
         #btnSairApresentacao:hover {
-            background: rgba(0,0,0,0.6);
-            color: white;
+            background: rgba(0,0,0,0.55);
+            color: rgba(255,255,255,0.8);
+            border-color: rgba(255,255,255,0.2);
         }
         #btnSairApresentacao svg {
-            width: 10px;
-            height: 10px;
-            fill: rgba(255,255,255,0.55);
+            width: 8px;
+            height: 8px;
+            fill: rgba(255,255,255,0.25);
+            transition: fill 0.3s;
         }
         #btnSairApresentacao:hover svg {
-            fill: white;
+            fill: rgba(255,255,255,0.8);
         }
         </style>
 </head>
@@ -4346,7 +4447,36 @@
             };
         }
 
-        // ── MODO APRESENTAÇÃO ────────────────────────────────────────────
+        // ── TOOLTIP DOS ÍCONES DE CATEGORIA (position:fixed — sempre visível) ──
+        (function() {
+            const tip = document.createElement('div');
+            tip.className = 'icon-tooltip';
+            document.body.appendChild(tip);
+
+            document.addEventListener('mouseover', function(e) {
+                const el = e.target.closest('.compact-header-bolinha');
+                if (el && el.title) {
+                    const r = el.getBoundingClientRect();
+                    tip.textContent = el.title;
+                    tip.style.left = (r.left + r.width / 2 - tip.offsetWidth / 2) + 'px';
+                    tip.style.top  = (r.top - tip.offsetHeight - 10) + 'px';
+                    tip.classList.add('visible');
+                    // recalcular após render
+                    requestAnimationFrame(() => {
+                        tip.style.left = (r.left + r.width / 2 - tip.offsetWidth / 2) + 'px';
+                        tip.style.top  = (r.top - tip.offsetHeight - 10) + 'px';
+                    });
+                }
+            });
+            document.addEventListener('mouseout', function(e) {
+                if (e.target.closest('.compact-header-bolinha')) {
+                    tip.classList.remove('visible');
+                }
+            });
+        })();
+        // ─────────────────────────────────────────────────────────────────
+
+        // ── MODO APRESENTAÇÃO ────────────────────────────────────────────────
         function ativarModoApresentacao() {
             // 1. Fullscreen real (= F11)
             const el = document.documentElement;
@@ -4358,6 +4488,8 @@
             document.body.classList.add('modo-apresentacao');
             const btn = document.getElementById('btnSairApresentacao');
             if (btn) btn.style.display = 'flex';
+            const floatBar = document.getElementById('autoRefreshFloat');
+            if (floatBar) floatBar.style.display = 'flex';
 
             // 3. Calcular zoom para caber tudo na tela após fullscreen
             setTimeout(() => {
@@ -4402,6 +4534,8 @@
             document.documentElement.style.setProperty('--apres-zoom', '1');
             const btn = document.getElementById('btnSairApresentacao');
             if (btn) btn.style.display = 'none';
+            const floatBar2 = document.getElementById('autoRefreshFloat');
+            if (floatBar2) floatBar2.style.display = 'none';
             setTimeout(() => {
                 setViewMode('compact');
                 applyAllFilters();
@@ -4518,12 +4652,19 @@
                     clearInterval(tick);
                     dot.classList.add('atualizando');
                     label.textContent = 'Atualizando dados...';
+                    const dotF = document.getElementById('refreshDotFloat');
+                    const lblF = document.getElementById('refreshLabelFloat');
+                    if (dotF) dotF.classList.add('atualizando');
+                    if (lblF) lblF.textContent = 'Atualizando dados...';
                     recarregarDadosSilencioso()
                         .then(ok => {
                             dot.classList.remove('atualizando');
-                            label.textContent = ok
-                                ? 'Dados atualizados ✓'
-                                : 'Falha na atualização';
+                            const msg = ok ? 'Dados atualizados ✓' : 'Falha na atualização';
+                            label.textContent = msg;
+                            const dotF2 = document.getElementById('refreshDotFloat');
+                            const lblF2 = document.getElementById('refreshLabelFloat');
+                            if (dotF2) dotF2.classList.remove('atualizando');
+                            if (lblF2) lblF2.textContent = msg;
                             setTimeout(() => iniciarContadorAtualizacao(), 2000);
                         })
                         .catch(() => {
@@ -4534,9 +4675,12 @@
                 } else {
                     const min = Math.floor(seg / 60);
                     const s   = seg % 60;
-                    label.textContent = min > 0
+                    const txt = min > 0
                         ? `Próxima atualização em ${min}m ${s.toString().padStart(2,'0')}s`
                         : `Próxima atualização em ${s}s`;
+                    label.textContent = txt;
+                    const lf = document.getElementById('refreshLabelFloat');
+                    if (lf) lf.textContent = txt;
                 }
             }, 1000);
         }
@@ -4740,6 +4884,11 @@
                         <div class="compact-header-section crew-header-section" title="Chefe de Máquinas">CFM</div>
                         <div class="compact-header-section crew-header-section" title="Imediato">IMT</div>
                         <div class="compact-header-section compact-header-idade" title="Idade da Embarcação">IDADE</div>
+                        <div class="compact-header-indicators">
+                            <div class="compact-header-bolinha" title="Equipamentos"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.68.07-1.08s-.03-.74-.07-1.08l2.32-1.82c.21-.16.27-.46.13-.7l-2.2-3.81a.534.534 0 0 0-.65-.22l-2.73 1.1c-.57-.44-1.18-.8-1.86-1.07l-.42-2.9A.54.54 0 0 0 14 2h-4a.54.54 0 0 0-.53.46l-.42 2.9c-.68.27-1.29.63-1.86 1.07L4.46 5.33a.533.533 0 0 0-.65.22L1.61 9.36c-.14.24-.08.54.13.7l2.32 1.82c-.04.34-.07.69-.07 1.08 0 .39.03.74.07 1.08L1.74 15.86c-.21.16-.27.46-.13.7l2.2 3.81c.14.23.43.3.65.22l2.73-1.1c.57.44 1.18.8 1.86 1.07l.42 2.9c.09.47.5.46.53.46h4c.25 0 .47-.19.53-.46l.42-2.9c.68-.27 1.29-.63 1.86-1.07l2.73 1.1c.22.08.51.01.65-.22l2.2-3.81c.14-.24.08-.54-.13-.7l-2.32-1.82Z"/></svg></div>
+                            <div class="compact-header-bolinha" title="Pessoal"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1c0-3.31 3.58-6 8-6s8 2.69 8 6v1H4z"/></svg></div>
+                            <div class="compact-header-bolinha" title="Certificação"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 3.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/><line x1="8" y1="13" x2="13" y2="13" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="16" x2="16" y2="16" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><path d="M15 14l1.5 1.5L19 13" stroke="rgba(255,255,255,.9)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                        </div>
                         <span class="classe-filter-badge"></span>
                     `;
                 }
@@ -5385,6 +5534,11 @@
                 <div class="compact-header-section crew-header-section" title="Chefe de Máquinas">CFM</div>
                 <div class="compact-header-section crew-header-section" title="Imediato">IMT</div>
                 <div class="compact-header-section compact-header-idade" title="Idade da Embarcação">IDADE</div>
+                <div class="compact-header-indicators">
+                    <div class="compact-header-bolinha" title="Equipamentos"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.68.07-1.08s-.03-.74-.07-1.08l2.32-1.82c.21-.16.27-.46.13-.7l-2.2-3.81a.534.534 0 0 0-.65-.22l-2.73 1.1c-.57-.44-1.18-.8-1.86-1.07l-.42-2.9A.54.54 0 0 0 14 2h-4a.54.54 0 0 0-.53.46l-.42 2.9c-.68.27-1.29.63-1.86 1.07L4.46 5.33a.533.533 0 0 0-.65.22L1.61 9.36c-.14.24-.08.54.13.7l2.32 1.82c-.04.34-.07.69-.07 1.08 0 .39.03.74.07 1.08L1.74 15.86c-.21.16-.27.46-.13.7l2.2 3.81c.14.23.43.3.65.22l2.73-1.1c.57.44 1.18.8 1.86 1.07l.42 2.9c.09.47.5.46.53.46h4c.25 0 .47-.19.53-.46l.42-2.9c.68-.27 1.29-.63 1.86-1.07l2.73 1.1c.22.08.51.01.65-.22l2.2-3.81c.14-.24.08-.54-.13-.7l-2.32-1.82Z"/></svg></div>
+                    <div class="compact-header-bolinha" title="Pessoal"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1c0-3.31 3.58-6 8-6s8 2.69 8 6v1H4z"/></svg></div>
+                    <div class="compact-header-bolinha" title="Certificação"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 3.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/><line x1="8" y1="13" x2="13" y2="13" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="16" x2="16" y2="16" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><path d="M15 14l1.5 1.5L19 13" stroke="rgba(255,255,255,.9)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                </div>
                 <span class="classe-filter-badge"></span>
             `;
             leftColumn.appendChild(leftHeader);
@@ -5403,6 +5557,11 @@
                 <div class="compact-header-section crew-header-section" title="Chefe de Máquinas">CFM</div>
                 <div class="compact-header-section crew-header-section" title="Imediato">IMT</div>
                 <div class="compact-header-section compact-header-idade" title="Idade da Embarcação">IDADE</div>
+                <div class="compact-header-indicators">
+                    <div class="compact-header-bolinha" title="Equipamentos"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.68.07-1.08s-.03-.74-.07-1.08l2.32-1.82c.21-.16.27-.46.13-.7l-2.2-3.81a.534.534 0 0 0-.65-.22l-2.73 1.1c-.57-.44-1.18-.8-1.86-1.07l-.42-2.9A.54.54 0 0 0 14 2h-4a.54.54 0 0 0-.53.46l-.42 2.9c-.68.27-1.29.63-1.86 1.07L4.46 5.33a.533.533 0 0 0-.65.22L1.61 9.36c-.14.24-.08.54.13.7l2.32 1.82c-.04.34-.07.69-.07 1.08 0 .39.03.74.07 1.08L1.74 15.86c-.21.16-.27.46-.13.7l2.2 3.81c.14.23.43.3.65.22l2.73-1.1c.57.44 1.18.8 1.86 1.07l.42 2.9c.09.47.5.46.53.46h4c.25 0 .47-.19.53-.46l.42-2.9c.68-.27 1.29-.63 1.86-1.07l2.73 1.1c.22.08.51.01.65-.22l2.2-3.81c.14-.24.08-.54-.13-.7l-2.32-1.82Z"/></svg></div>
+                    <div class="compact-header-bolinha" title="Pessoal"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="7" r="4"/><path d="M4 21v-1c0-3.31 3.58-6 8-6s8 2.69 8 6v1H4z"/></svg></div>
+                    <div class="compact-header-bolinha" title="Certificação"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 3.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/><line x1="8" y1="13" x2="13" y2="13" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="16" x2="16" y2="16" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round"/><path d="M15 14l1.5 1.5L19 13" stroke="rgba(255,255,255,.9)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                </div>
                 <span class="classe-filter-badge"></span>
             `;
             rightColumn.appendChild(rightHeader);
@@ -5771,6 +5930,10 @@
 
     </script>
 
+    <div id="autoRefreshFloat">
+        <div class="refresh-dot" id="refreshDotFloat"></div>
+        <span id="refreshLabelFloat">...</span>
+    </div>
     <button id="btnSairApresentacao" onclick="sairModoApresentacao()">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
