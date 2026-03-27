@@ -4288,8 +4288,13 @@
 
         // Versão silenciosa: busca dados sem mexer no overlay ou no modo de visualização
         async function recarregarDadosSilencioso() {
+            console.log('🔄 [Auto] Buscando dados...');
             const dados = await buscarDadosSharePoint();
-            if (!dados || dados.length === 0) return false;
+            console.log('📦 [Auto] Dados recebidos:', dados ? dados.length : 'null');
+            if (!dados || dados.length === 0) {
+                console.warn('⚠️ [Auto] Sem dados retornados');
+                return false;
+            }
 
             // Processar dados mais recentes por navio
             const novosDados = {};
