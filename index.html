@@ -1458,9 +1458,9 @@
         .auto-refresh-bar {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: flex-start;
             gap: 8px;
-            padding: 4px 8px 8px 0;
+            padding: 6px 0 4px 4px;
             font-size: 11px;
             color: #5d7a8a;
             font-family: 'Segoe UI', sans-serif;
@@ -2173,11 +2173,6 @@
             </div>
         </div>
 
-        <div class="auto-refresh-bar">
-            <div class="refresh-dot" id="refreshDot"></div>
-            <span id="refreshLabel">Atualização automática a cada 5 min</span>
-        </div>
-
         <div class="dashboard">
             <div class="ship-list" id="shipList">
                 <div class="filter-dropdown-container">
@@ -2194,6 +2189,11 @@
                 </div>
             </div>
             <div class="systems-grid" id="systemsGrid"></div>
+        </div>
+
+        <div class="auto-refresh-bar">
+            <div class="refresh-dot" id="refreshDot"></div>
+            <span id="refreshLabel">Aguardando dados...</span>
         </div>
 
         <!-- Container para modo Lista de Navios -->
@@ -4283,41 +4283,81 @@
             carregarDadosReais();
         }, 500);
 
-        // ── ATUALIZAÇÃO AUTOMÁTICA A CADA 5 MINUTOS ──────────────────────
-        const INTERVALO_ATUALIZACAO = 5 * 60 * 1000; // 5 minutos em ms
+        // ── ATUALIZAÇÃO AUTOMÁTICA ───────────────────────────────────────
+        const INTERVALO_ATUALIZACAO = 30; // segundos (mudar para 300 em produção)
 
-        function atualizarRelogio() {
+        // Versão silenciosa: busca dados sem mexer no overlay ou no modo de visualização
+        async function recarregarDadosSilencioso() {
+            const dados = await buscarDadosSharePoint();
+            if (!dados || dados.length === 0) return false;
+
+            // Processar dados mais recentes por navio
+            const novosDados = {};
+            const datasMap   = {};
+            dados.forEach(item => {
+                const nomeNavio = (item.NomeNavio && typeof item.NomeNavio === 'object')
+                    ? item.NomeNavio.Value : item.NomeNavio;
+                if (!nomeNavio) return;
+                const dataAtual = item.DataPreenchimento ? new Date(item.DataPreenchimento) : new Date(0);
+                if (!novosDados[nomeNavio] || dataAtual > datasMap[nomeNavio]) {
+                    novosDados[nomeNavio] = item;
+                    datasMap[nomeNavio]   = dataAtual;
+                }
+            });
+
+            // Aplicar dados atualizados
+            dadosSharePoint = novosDados;
+            Object.entries(dadosSharePoint).forEach(([nome, item]) => {
+                atualizarDetalhesNavio(nome, item);
+                atualizarNSENavio(nome, item);
+                atualizarTripulacaoNavio(nome, item);
+            });
+
+            // Re-renderizar sem mudar modo de visualização
+            renderSystemsGrid();
+            atualizarContadoresClasses();
+            setTimeout(() => applyAllFilters(), 200);
+            return true;
+        }
+
+        function iniciarContadorAtualizacao() {
             const dot   = document.getElementById('refreshDot');
             const label = document.getElementById('refreshLabel');
             if (!dot || !label) return;
 
-            let segundosRestantes = INTERVALO_ATUALIZACAO / 1000;
+            let seg = INTERVALO_ATUALIZACAO;
 
             const tick = setInterval(() => {
-                segundosRestantes--;
-                if (segundosRestantes <= 0) {
+                seg--;
+                if (seg <= 0) {
                     clearInterval(tick);
-                    // Mostrar indicador de busca
                     dot.classList.add('atualizando');
-                    label.textContent = 'Buscando dados...';
-                    // Buscar dados novos em segundo plano
-                    carregarDadosReais().finally(() => {
-                        dot.classList.remove('atualizando');
-                        // Reiniciar o contador
-                        atualizarRelogio();
-                    });
+                    label.textContent = 'Atualizando dados...';
+                    recarregarDadosSilencioso()
+                        .then(ok => {
+                            dot.classList.remove('atualizando');
+                            label.textContent = ok
+                                ? 'Dados atualizados ✓'
+                                : 'Falha na atualização';
+                            setTimeout(() => iniciarContadorAtualizacao(), 2000);
+                        })
+                        .catch(() => {
+                            dot.classList.remove('atualizando');
+                            label.textContent = 'Erro na atualização';
+                            setTimeout(() => iniciarContadorAtualizacao(), 5000);
+                        });
                 } else {
-                    const min = Math.floor(segundosRestantes / 60);
-                    const seg = segundosRestantes % 60;
+                    const min = Math.floor(seg / 60);
+                    const s   = seg % 60;
                     label.textContent = min > 0
-                        ? `Próxima atualização em ${min}m ${seg.toString().padStart(2,'0')}s`
-                        : `Próxima atualização em ${seg}s`;
+                        ? `Próxima atualização em ${min}m ${s.toString().padStart(2,'0')}s`
+                        : `Próxima atualização em ${s}s`;
                 }
             }, 1000);
         }
 
-        // Iniciar contador após o primeiro carregamento
-        setTimeout(() => atualizarRelogio(), 1500);
+        // Iniciar após o primeiro carregamento
+        setTimeout(() => iniciarContadorAtualizacao(), 2000);
         // ─────────────────────────────────────────────────────────────────
 
         // Iniciar no modo compacto
