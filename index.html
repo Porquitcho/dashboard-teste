@@ -4287,11 +4287,36 @@
         const INTERVALO_ATUALIZACAO = 30; // segundos (mudar para 300 em produção)
 
         // Versão silenciosa: busca dados sem mexer no overlay ou no modo de visualização
+        // Helper: reseta um navio para estado cinza/vazio
+        function resetarNavioCinza(nomeNavio) {
+            const cinza = { cor: 'cinza', obs: '' };
+            statusDetalhesNavios[nomeNavio] = {
+                equipamentos: {
+                    'Motor principal': {...cinza}, 'MCAs': {...cinza}, 'Grupo destilatório': {...cinza},
+                    'Equip. fundeio, amarração e guindastes': {...cinza}, 'Caldeira auxiliar': {...cinza},
+                    'DGE E BBA incêndio emergência': {...cinza}, 'Sistema de carga e descarga': {...cinza},
+                    'Máquina do leme': {...cinza}, 'Purificadores': {...cinza},
+                    'Sistemas de navegação': {...cinza}, 'Estado geral convés': {...cinza},
+                    'Estado geral PM': {...cinza}
+                },
+                pessoal: {
+                    'Trifix %': {...cinza}, 'Tripulantes vencidos': {...cinza},
+                    'Crew Matrix': {...cinza}, 'Certificação de Tripulante': {...cinza}
+                },
+                certificacao: {
+                    'Pendência de Documentação Navio': {...cinza},
+                    'Condição de classe': {...cinza}, 'Obs Vetting': {...cinza}
+                }
+            };
+            dadosIndicadores[nomeNavio] = { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
+            tripulacaoNavios[nomeNavio]  = { CMT: '---', CMT_MAT: '', CFM: '---', CFM_MAT: '', IMT: '---', IMT_MAT: '' };
+        }
+
         async function recarregarDadosSilencioso() {
             const dados = await buscarDadosSharePoint();
             if (!dados || dados.length === 0) return false;
 
-            // Processar dados mais recentes por navio
+            // Selecionar dado mais recente por navio
             const novosDados = {};
             const datasMap   = {};
             dados.forEach(item => {
@@ -4305,45 +4330,22 @@
                 }
             });
 
-            // Limpar dados de navios que não vieram mais no novo fetch
-            // (ex: registro removido do list → volta para cinza)
-            naviosReais.forEach(navio => {
-                if (!novosDados[navio.nome]) {
-                    // Resetar para cinza
-                    const cinza = { cor: 'cinza', obs: '' };
-                    statusDetalhesNavios[navio.nome] = {
-                        equipamentos: {
-                            'Motor principal': cinza, 'MCAs': cinza, 'Grupo destilatório': cinza,
-                            'Equip. fundeio, amarração e guindastes': cinza, 'Caldeira auxiliar': cinza,
-                            'DGE E BBA incêndio emergência': cinza, 'Sistema de carga e descarga': cinza,
-                            'Máquina do leme': cinza, 'Purificadores': cinza,
-                            'Sistemas de navegação': cinza, 'Estado geral convés': cinza, 'Estado geral PM': cinza
-                        },
-                        pessoal: {
-                            'Trifix %': cinza, 'Tripulantes vencidos': cinza,
-                            'Crew Matrix': cinza, 'Certificação de Tripulante': cinza
-                        },
-                        certificacao: {
-                            'Pendência de Documentação Navio': cinza,
-                            'Condição de classe': cinza, 'Obs Vetting': cinza
-                        }
-                    };
-                    dadosIndicadores[navio.nome] = { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
-                    tripulacaoNavios[navio.nome] = {
-                        CMT: '---', CMT_MAT: '', CFM: '---', CFM_MAT: '', IMT: '---', IMT_MAT: ''
-                    };
-                }
-            });
+            // Passo 1: zerar TODOS os 26 navios antes de reaplicar
+            // Garante que navios removidos do list voltam ao cinza
+            naviosReais.forEach(navio => resetarNavioCinza(navio.nome));
 
-            // Aplicar dados atualizados
-            dadosSharePoint = novosDados;
-            Object.entries(dadosSharePoint).forEach(([nome, item]) => {
+            // Passo 2: limpar dadosSharePoint e reconstruir do zero
+            dadosSharePoint = {};
+
+            // Passo 3: aplicar apenas os navios que vieram no fetch
+            Object.entries(novosDados).forEach(([nome, item]) => {
+                dadosSharePoint[nome] = item;
                 atualizarDetalhesNavio(nome, item);
                 atualizarNSENavio(nome, item);
                 atualizarTripulacaoNavio(nome, item);
             });
 
-            // Re-renderizar respeitando modo de visualização atual
+            // Passo 4: re-renderizar preservando modo e filtros
             renderSystemsGrid();
             atualizarContadoresClasses();
             setTimeout(() => {
