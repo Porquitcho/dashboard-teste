@@ -187,20 +187,23 @@
             bottom: -40px;
         }
 
-        /* Tooltip do botão Home aparece em CIMA */
-        #btnHome .tooltip-home {
+        /* Tooltip dos botões da linha superior aparecem em CIMA */
+        #btnHome .tooltip-home,
+        #btnApresentacao .tooltip-home {
             bottom: auto;
             top: -35px;
         }
 
-        #btnHome .tooltip-home::before {
+        #btnHome .tooltip-home::before,
+        #btnApresentacao .tooltip-home::before {
             top: auto;
             bottom: -6px;
             border-bottom-color: transparent;
             border-top-color: rgba(0, 0, 0, 0.8);
         }
 
-        #btnHome:hover .tooltip-home {
+        #btnHome:hover .tooltip-home,
+        #btnApresentacao:hover .tooltip-home {
             bottom: auto;
             top: -40px;
         }
@@ -2013,6 +2016,69 @@
             0%   { transform: translateY(0) scale(1);   opacity: 0.7; }
             100% { transform: translateY(-30px) scale(2.5); opacity: 0; }
         }
+        
+        /* ── MODO APRESENTAÇÃO ── */
+        body.modo-apresentacao .header,
+        body.modo-apresentacao #statusMessage,
+        body.modo-apresentacao .filter-popup-overlay,
+        body.modo-apresentacao .filter-overlay {
+            display: none !important;
+        }
+        body.modo-apresentacao .ship-list {
+            display: none !important;
+        }
+        body.modo-apresentacao .container {
+            padding: 10px 12px;
+            zoom: var(--apres-zoom, 1);
+        }
+        body.modo-apresentacao .stats {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+        }
+        body.modo-apresentacao .auto-refresh-bar {
+            padding: 2px 0 4px 4px;
+        }
+        body.modo-apresentacao .dashboard {
+            height: auto;
+        }
+        body.modo-apresentacao #systemsGrid {
+            overflow-y: auto;
+        }
+
+        /* ── BOTÃO SAIR MODO APRESENTAÇÃO ── */
+        #btnSairApresentacao {
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: rgba(255,255,255,0.55);
+            font-size: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 0.5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        #btnSairApresentacao:hover {
+            background: rgba(0,0,0,0.6);
+            color: white;
+        }
+        #btnSairApresentacao svg {
+            width: 10px;
+            height: 10px;
+            fill: rgba(255,255,255,0.55);
+        }
+        #btnSairApresentacao:hover svg {
+            fill: white;
+        }
         </style>
 </head>
 
@@ -2108,12 +2174,20 @@
                 <div class="subtitle">Sistema de Monitoramento - 26 Embarcações</div>
             </div>
             <div class="home-button-container">
-                <button class="btn-home" id="btnHome" onclick="voltarParaHome()" style="align-self:flex-end;">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-                    </svg>
-                    <span class="tooltip-home">Home</span>
-                </button>
+                <div style="display:flex;flex-direction:row;gap:10px;align-self:flex-end;">
+                    <button class="btn-home" id="btnApresentacao" onclick="ativarModoApresentacao()">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 5h5V3H3v7h2V5zm9-2v2h5v5h2V3h-7zm-9 14H3v7h7v-2H5v-5zm14 5h-5v2h7v-7h-2v5z"/>
+                        </svg>
+                        <span class="tooltip-home">Modo Apresentação</span>
+                    </button>
+                    <button class="btn-home" id="btnHome" onclick="voltarParaHome()">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                        </svg>
+                        <span class="tooltip-home">Home</span>
+                    </button>
+                </div>
                 <div style="display:flex;flex-direction:row;gap:10px;">
                     <button class="btn-home btn-sort" id="btnSort" onclick="toggleSortMode()" title="">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -4272,6 +4346,82 @@
             };
         }
 
+        // ── MODO APRESENTAÇÃO ────────────────────────────────────────────
+        function ativarModoApresentacao() {
+            // 1. Fullscreen real (= F11)
+            const el = document.documentElement;
+            const req = el.requestFullscreen || el.webkitRequestFullscreen
+                     || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (req) req.call(el).catch(() => {});
+
+            // 2. Ativar modo apresentação
+            document.body.classList.add('modo-apresentacao');
+            const btn = document.getElementById('btnSairApresentacao');
+            if (btn) btn.style.display = 'flex';
+
+            // 3. Calcular zoom para caber tudo na tela após fullscreen
+            setTimeout(() => {
+                _ajustarZoomApresentacao();
+                reorganizeCompactLayout();
+                applyAllFilters();
+            }, 200);
+        }
+
+        function _ajustarZoomApresentacao() {
+            // Calcula o zoom necessário para o conteúdo caber na altura da tela
+            const container = document.querySelector('.container');
+            if (!container) return;
+            // Reset zoom para medir tamanho real
+            document.documentElement.style.setProperty('--apres-zoom', '1');
+            const alturaDisponivel = window.screen.height;
+            const larguraDisponivel = window.screen.width;
+            // Altura do conteúdo: stats + refresh + grid
+            const stats = document.querySelector('.stats');
+            const refresh = document.querySelector('.auto-refresh-bar');
+            const grid = document.getElementById('systemsGrid');
+            if (!stats || !grid) return;
+            const alturaConteudo = (stats.offsetHeight || 80)
+                                 + (refresh ? refresh.offsetHeight : 20)
+                                 + (grid.scrollHeight || 600)
+                                 + 40; // padding
+            const zoomAltura = alturaDisponivel / alturaConteudo;
+            const zoomLargura = larguraDisponivel / (container.scrollWidth || larguraDisponivel);
+            const zoom = Math.min(zoomAltura, zoomLargura, 1); // nunca ampliar, só reduzir
+            document.documentElement.style.setProperty('--apres-zoom', zoom.toFixed(3));
+        }
+
+        function sairModoApresentacao() {
+            // 1. Sair do fullscreen
+            const exitFn = document.exitFullscreen || document.webkitExitFullscreen
+                        || document.mozCancelFullScreen || document.msExitFullscreen;
+            if (exitFn && (document.fullscreenElement || document.webkitFullscreenElement)) {
+                exitFn.call(document);
+            }
+            // 2. Restaurar layout normal
+            document.body.classList.remove('modo-apresentacao');
+            document.documentElement.style.setProperty('--apres-zoom', '1');
+            const btn = document.getElementById('btnSairApresentacao');
+            if (btn) btn.style.display = 'none';
+            setTimeout(() => {
+                setViewMode('compact');
+                applyAllFilters();
+            }, 80);
+        }
+
+        // ESC nativo do navegador ao sair do fullscreen também restaura o layout
+        function _onFullscreenChange() {
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement
+                || document.mozFullScreenElement || document.msFullscreenElement);
+            if (!isFullscreen && document.body.classList.contains('modo-apresentacao')) {
+                sairModoApresentacao();
+            }
+        }
+        document.addEventListener('fullscreenchange',       _onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', _onFullscreenChange);
+        document.addEventListener('mozfullscreenchange',    _onFullscreenChange);
+        document.addEventListener('MSFullscreenChange',     _onFullscreenChange);
+        // ─────────────────────────────────────────────────────────────────
+
         // Inicializar
         initDadosCompletos();
         renderShipList();
@@ -4284,7 +4434,7 @@
         }, 500);
 
         // ── ATUALIZAÇÃO AUTOMÁTICA ───────────────────────────────────────
-        const INTERVALO_ATUALIZACAO = 30; // segundos (mudar para 300 em produção)
+        const INTERVALO_ATUALIZACAO = 3600; // segundos (1 hora)
 
         // Versão silenciosa: busca dados sem mexer no overlay ou no modo de visualização
         // Helper: reseta um navio para estado cinza/vazio
@@ -5620,6 +5770,13 @@
         })();
 
     </script>
+
+    <button id="btnSairApresentacao" onclick="sairModoApresentacao()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+        ESC — Sair
+    </button>
 </body>
 
 </html>
