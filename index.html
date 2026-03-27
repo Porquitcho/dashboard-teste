@@ -4288,13 +4288,8 @@
 
         // Versão silenciosa: busca dados sem mexer no overlay ou no modo de visualização
         async function recarregarDadosSilencioso() {
-            console.log('🔄 [Auto] Buscando dados...');
             const dados = await buscarDadosSharePoint();
-            console.log('📦 [Auto] Dados recebidos:', dados ? dados.length : 'null');
-            if (!dados || dados.length === 0) {
-                console.warn('⚠️ [Auto] Sem dados retornados');
-                return false;
-            }
+            if (!dados || dados.length === 0) return false;
 
             // Processar dados mais recentes por navio
             const novosDados = {};
@@ -4307,6 +4302,36 @@
                 if (!novosDados[nomeNavio] || dataAtual > datasMap[nomeNavio]) {
                     novosDados[nomeNavio] = item;
                     datasMap[nomeNavio]   = dataAtual;
+                }
+            });
+
+            // Limpar dados de navios que não vieram mais no novo fetch
+            // (ex: registro removido do list → volta para cinza)
+            naviosReais.forEach(navio => {
+                if (!novosDados[navio.nome]) {
+                    // Resetar para cinza
+                    const cinza = { cor: 'cinza', obs: '' };
+                    statusDetalhesNavios[navio.nome] = {
+                        equipamentos: {
+                            'Motor principal': cinza, 'MCAs': cinza, 'Grupo destilatório': cinza,
+                            'Equip. fundeio, amarração e guindastes': cinza, 'Caldeira auxiliar': cinza,
+                            'DGE E BBA incêndio emergência': cinza, 'Sistema de carga e descarga': cinza,
+                            'Máquina do leme': cinza, 'Purificadores': cinza,
+                            'Sistemas de navegação': cinza, 'Estado geral convés': cinza, 'Estado geral PM': cinza
+                        },
+                        pessoal: {
+                            'Trifix %': cinza, 'Tripulantes vencidos': cinza,
+                            'Crew Matrix': cinza, 'Certificação de Tripulante': cinza
+                        },
+                        certificacao: {
+                            'Pendência de Documentação Navio': cinza,
+                            'Condição de classe': cinza, 'Obs Vetting': cinza
+                        }
+                    };
+                    dadosIndicadores[navio.nome] = { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
+                    tripulacaoNavios[navio.nome] = {
+                        CMT: '---', CMT_MAT: '', CFM: '---', CFM_MAT: '', IMT: '---', IMT_MAT: ''
+                    };
                 }
             });
 
