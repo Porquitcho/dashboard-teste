@@ -4313,10 +4313,13 @@
                 atualizarTripulacaoNavio(nome, item);
             });
 
-            // Re-renderizar sem mudar modo de visualização
+            // Re-renderizar respeitando modo de visualização atual
             renderSystemsGrid();
             atualizarContadoresClasses();
-            setTimeout(() => applyAllFilters(), 200);
+            setTimeout(() => {
+                setViewMode(currentMode);
+                setTimeout(() => applyAllFilters(), 150);
+            }, 50);
             return true;
         }
 
