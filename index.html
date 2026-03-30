@@ -18,6 +18,7 @@
             color: #ffffff;
             padding: 20px;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
@@ -1596,8 +1597,7 @@
             display: none;
             grid-template-columns: 280px 1fr;
             gap: 30px;
-            height: calc(100vh - 180px);
-            min-height: 800px;
+            min-height: calc(100vh - 180px);
         }
 
         .lista-navios-container.active {
@@ -1609,7 +1609,8 @@
             border-radius: 10px;
             padding: 15px;
             overflow-y: auto;
-            max-height: 100%;
+            align-self: start;
+            max-height: var(--lista-lateral-height, 600px);
         }
 
         .lista-lateral-titulo {
@@ -1662,8 +1663,6 @@
             background: linear-gradient(135deg, rgba(44, 62, 80, 0.95) 0%, rgba(52, 73, 94, 0.95) 100%);
             border-radius: 15px;
             padding: 30px;
-            overflow-y: auto;
-            max-height: 100%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -1698,6 +1697,40 @@
             padding: 20px 0 30px 0;
             border-bottom: 2px solid rgba(0, 0, 0, 0.1);
             flex-wrap: wrap;
+            position: relative;
+        }
+
+        .btn-voltar-perfil {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-voltar-perfil:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-voltar-perfil svg {
+            flex-shrink: 0;
+        }
+
+        body.modo-apresentacao .btn-voltar-perfil {
+            display: flex;
         }
 
         .navio-titulo-box {
@@ -1768,7 +1801,6 @@
             border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             padding: 25px 20px 20px 20px;
-            min-height: 550px;
             transition: all 0.3s ease;
         }
 
@@ -1885,7 +1917,7 @@
         .tooltip-obs.visible {
             opacity: 1;
             visibility: visible;
-            pointer-events: auto;
+            pointer-events: none;
         }
 
         .tooltip-obs.obs-amarelo {
@@ -3699,7 +3731,7 @@
             const tooltip = btn.querySelector('.tooltip-home');
             if (currentSortMode === 'preenchidos') {
                 btn.classList.add('active');
-                tooltip.textContent = 'Ordenar: Preenchidos primeiro';
+                tooltip.textContent = 'Ordenar: Ordem Alfabética';
             } else {
                 btn.classList.remove('active');
                 tooltip.textContent = 'Ordenar: Original';
@@ -5351,11 +5383,15 @@
 
             container.innerHTML = '';
 
-            for (let i = 0; i < naviosReais.length; i++) {
-                const navio = naviosReais[i];
+            // Criar lista indexada e ordenar alfabeticamente (A→Z) pelo nome
+            const naviosOrdenados = naviosReais
+                .map((navio, index) => ({ navio, index }))
+                .sort((a, b) => a.navio.nome.localeCompare(b.navio.nome, 'pt-BR'));
+
+            naviosOrdenados.forEach(({ navio, index }) => {
                 const item = document.createElement('div');
                 item.className = 'navio-item';
-                item.setAttribute('data-index', i);
+                item.setAttribute('data-index', index);
 
                 const nomeDiv = document.createElement('div');
                 nomeDiv.className = 'navio-item-nome';
@@ -5368,21 +5404,21 @@
                 item.appendChild(nomeDiv);
                 item.appendChild(classeDiv);
 
-                (function (index) {
-                    item.onclick = function () {
-                        selecionarNavio(index);
-                    };
-                })(i);
+                item.onclick = function () {
+                    selecionarNavio(index);
+                };
 
                 container.appendChild(item);
-            }
+            });
         }
 
         function selecionarNavio(index) {
             navioSelecionado = index;
 
-            document.querySelectorAll('.navio-item').forEach((item, i) => {
-                if (i === index) {
+            // Usar data-index para o match correto (lista está em ordem alfabética,
+            // não na ordem original do array naviosReais)
+            document.querySelectorAll('.navio-item').forEach((item) => {
+                if (parseInt(item.getAttribute('data-index')) === index) {
                     item.classList.add('selected');
                 } else {
                     item.classList.remove('selected');
@@ -5430,6 +5466,12 @@
 
             painel.innerHTML = `
                 <div class="detalhes-header">
+                    <button class="btn-voltar-perfil" onclick="voltarParaHome()" title="Voltar à tabela principal">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                        Voltar
+                    </button>
                     <div class="navio-titulo-box">${navio.nome}</div>
                     <div class="ido-circle">
                         <div class="ido-label">IDO-SD</div>
@@ -5468,7 +5510,16 @@
                 </div>
             `;
 
-            setTimeout(configurarTooltips, 50);
+            setTimeout(() => {
+                configurarTooltips();
+                // Casar altura da lista lateral com a altura do painel renderizado
+                const painelEl = document.getElementById('painelDetalhes');
+                const listaEl = document.querySelector('.lista-lateral');
+                if (painelEl && listaEl) {
+                    const alturaPanel = painelEl.offsetHeight;
+                    document.documentElement.style.setProperty('--lista-lateral-height', alturaPanel + 'px');
+                }
+            }, 50);
         }
 
         function reorganizeNormalLayout() {
