@@ -2117,10 +2117,13 @@
         body.modo-apresentacao html {
             overflow: hidden !important;
         }
-        body.modo-apresentacao .header,
         body.modo-apresentacao #statusMessage,
         body.modo-apresentacao .filter-popup-overlay,
         body.modo-apresentacao .filter-overlay {
+            display: none !important;
+        }
+        /* No fullscreen: ocultar apenas os botões do header, manter logo e título */
+        body.modo-apresentacao .home-button-container {
             display: none !important;
         }
         body.modo-apresentacao .ship-list {
@@ -2131,11 +2134,64 @@
             zoom: var(--apres-zoom, 1);
             overflow: hidden;
         }
-        body.modo-apresentacao .stats {
-            margin-top: 8px;
-            margin-bottom: 8px;
-            padding: 8px 12px;
+        body.modo-apresentacao .header {
+            padding: 8px 16px;
+            margin-bottom: 4px;
+            gap: 16px;
         }
+        body.modo-apresentacao .header-logo img {
+            height: 52px;
+        }
+        body.modo-apresentacao .header h1 {
+            font-size: 28px;
+            letter-spacing: 6px;
+        }
+        body.modo-apresentacao .header .subtitle {
+            font-size: 11px;
+            letter-spacing: 3px;
+            margin-top: 3px;
+        }
+        body.modo-apresentacao .header-text {
+            padding-right: 0;
+        }
+        body.modo-apresentacao .stats {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            padding: 4px 12px;
+            gap: 20px;
+        }
+        body.modo-apresentacao .stat-card {
+            padding: 4px 14px;
+            min-width: 80px;
+        }
+        body.modo-apresentacao .stat-number {
+            font-size: 16px;
+            margin-bottom: 1px;
+        }
+        body.modo-apresentacao .stat-label {
+            font-size: 8px;
+        }
+        /* Suprimir tooltips dos headers da tabela no fullscreen — evita sobreposição com os balões */
+        body.modo-apresentacao .compact-header-section[title]:hover::after,
+        body.modo-apresentacao .compact-header-section[title]:hover::before {
+            display: none !important;
+        }
+
+        body.modo-apresentacao .ship-row.compact-mode {
+            min-height: 38px;
+            padding: 2px 8px 2px 10px;
+            margin-bottom: 1px;
+        }
+        body.modo-apresentacao .ship-name.compact-mode {
+            font-size: 10px;
+        }
+        body.modo-apresentacao .ship-class.compact-mode {
+            font-size: 9px;
+        }
+        body.modo-apresentacao .compact-text-section {
+            font-size: 9px;
+        }
+
         body.modo-apresentacao .auto-refresh-bar {
             display: none !important;
         }
@@ -2144,7 +2200,7 @@
             position: fixed;
             top: 10px;
             left: 10px;
-            z-index: 999999;
+            z-index: 9999999;
             background: rgba(0,0,0,0.25);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
@@ -2181,7 +2237,7 @@
             position: fixed;
             top: 10px;
             right: 10px;
-            z-index: 999999;
+            z-index: 9999999;
             background: rgba(0,0,0,0.25);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 20px;
@@ -2326,7 +2382,7 @@
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
                         </svg>
-                        <span class="tooltip-home">Ordenar: Original</span>
+                        <span class="tooltip-home">Ordenar: Ordem Alfabética</span>
                     </button>
                     <button class="btn-home btn-privacy" id="btnPrivacy" onclick="togglePrivacyMode()">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -3709,7 +3765,7 @@
 
         // Filtro de classes - agora suporta múltipla seleção
         let currentClassFilter = []; // Array vazio = todas as classes
-        let currentSortMode = 'original'; // 'original' ou 'preenchidos'
+        let currentSortMode = 'preenchidos'; // 'preenchidos' (A-Z, padrão) ou 'original' (por grupo)
 
         function eNavioPreenchido(nome) {
             const raw = dadosSharePoint[nome];
@@ -3726,15 +3782,15 @@
         }
 
         function toggleSortMode() {
-            currentSortMode = currentSortMode === 'original' ? 'preenchidos' : 'original';
+            currentSortMode = currentSortMode === 'preenchidos' ? 'original' : 'preenchidos';
             const btn = document.getElementById('btnSort');
             const tooltip = btn.querySelector('.tooltip-home');
-            if (currentSortMode === 'preenchidos') {
+            if (currentSortMode === 'original') {
                 btn.classList.add('active');
-                tooltip.textContent = 'Ordenar: Ordem Alfabética';
+                tooltip.textContent = 'Ordenar: Por grupo';
             } else {
                 btn.classList.remove('active');
-                tooltip.textContent = 'Ordenar: Original';
+                tooltip.textContent = 'Ordenar: Ordem Alfabética';
             }
             // Re-aplicar filtros com nova ordenação
             applyAllFilters();
@@ -3747,15 +3803,13 @@
                            (parseInt(b.getAttribute('data-ship-number')) || 0);
                 });
             } else {
+                // Ordem alfabética pura (A-Z)
                 rows.sort((a, b) => {
                     const numA = parseInt(a.getAttribute('data-ship-number')) || 0;
                     const numB = parseInt(b.getAttribute('data-ship-number')) || 0;
                     const nA = naviosReais[numA - 1]?.nome || '';
                     const nB = naviosReais[numB - 1]?.nome || '';
-                    const pA = eNavioPreenchido(nA) ? 0 : 1;
-                    const pB = eNavioPreenchido(nB) ? 0 : 1;
-                    if (pA !== pB) return pA - pB;          // preenchidos primeiro
-                    return nA.localeCompare(nB, 'pt-BR');   // depois A-Z
+                    return nA.localeCompare(nB, 'pt-BR');
                 });
             }
             return rows;
@@ -4539,16 +4593,16 @@
             document.documentElement.style.setProperty('--apres-zoom', '1');
             const alturaDisponivel = window.screen.height;
             const larguraDisponivel = window.screen.width;
-            // Altura do conteúdo: stats + refresh + grid
-            const stats = document.querySelector('.stats');
-            const refresh = document.querySelector('.auto-refresh-bar');
-            const grid = document.getElementById('systemsGrid');
+            // Altura do conteúdo: header + stats + grid + padding
+            const header = document.querySelector('.header');
+            const stats  = document.querySelector('.stats');
+            const grid   = document.getElementById('systemsGrid');
             if (!stats || !grid) return;
-            const alturaConteudo = (stats.offsetHeight || 80)
-                                 + (refresh ? refresh.offsetHeight : 20)
+            const alturaConteudo = (header ? header.offsetHeight : 0)
+                                 + (stats.offsetHeight || 80)
                                  + (grid.scrollHeight || 600)
-                                 + 40; // padding
-            const zoomAltura = alturaDisponivel / alturaConteudo;
+                                 + 30; // padding container
+            const zoomAltura  = alturaDisponivel / alturaConteudo;
             const zoomLargura = larguraDisponivel / (container.scrollWidth || larguraDisponivel);
             const zoom = Math.min(zoomAltura, zoomLargura, 1); // nunca ampliar, só reduzir
             document.documentElement.style.setProperty('--apres-zoom', zoom.toFixed(3));
