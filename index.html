@@ -1256,8 +1256,7 @@
         }
 
         .classe-filter-badge.active {
-            display: inline-block;
-            animation: fadeIn 0.3s ease;
+            display: none;
         }
 
         @keyframes fadeIn {
@@ -2397,7 +2396,7 @@
 
         <div id="statusMessage" class="status-message"></div>
 
-        <!-- Overlay e Popup de filtro (acionado pelos headers) -->
+        <!-- Overlay e Popup de filtro -->
         <div class="filter-overlay" id="filterOverlay" onclick="closeFilterPopup()"></div>
         <div class="filter-popup" id="filterPopup">
             <div class="filter-popup-header">Filtrar por Classe</div>
@@ -4564,6 +4563,9 @@
 
         // ── MODO APRESENTAÇÃO ────────────────────────────────────────────────
         function ativarModoApresentacao() {
+            // 0. Garantir que a página está no topo antes de entrar no fullscreen
+            window.scrollTo({ top: 0, behavior: 'instant' });
+
             // 1. Fullscreen real (= F11)
             const el = document.documentElement;
             const req = el.requestFullscreen || el.webkitRequestFullscreen
