@@ -1116,11 +1116,13 @@
             transition: color 0.2s;
             position: static;
         }
+
         .compact-header-bolinha:hover .compact-header-bolinha-tooltip {
             display: block;
         }
+
         .compact-header-bolinha:not(:first-child) {
-            border-left: 1px solid rgba(255,255,255,0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .compact-header-bolinha:hover {
@@ -1139,12 +1141,13 @@
             font-weight: 500;
             white-space: nowrap;
             z-index: 999999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             letter-spacing: 0.3px;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s;
         }
+
         .icon-tooltip.visible {
             opacity: 1;
         }
@@ -1413,6 +1416,7 @@
         .status-indicators.compact-mode .status-circle.compact-mode {
             position: relative;
         }
+
         .status-indicators.compact-mode .status-circle.compact-mode:not(:first-child)::before {
             content: '';
             position: absolute;
@@ -1420,7 +1424,7 @@
             top: 10%;
             height: 80%;
             width: 1px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .status-circle {
@@ -1529,6 +1533,7 @@
             font-family: 'Segoe UI', sans-serif;
             letter-spacing: 0.5px;
         }
+
         .refresh-dot {
             width: 7px;
             height: 7px;
@@ -1536,13 +1541,22 @@
             background: #5d7a8a;
             transition: background 0.3s;
         }
+
         .refresh-dot.atualizando {
             background: #4fc3f7;
             animation: pulseDot 0.8s ease-in-out infinite alternate;
         }
+
         @keyframes pulseDot {
-            from { opacity: 0.4; transform: scale(0.8); }
-            to   { opacity: 1;   transform: scale(1.2); }
+            from {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.2);
+            }
         }
 
         .stat-card:hover {
@@ -1981,13 +1995,15 @@
         }
 
         @media (max-width: 1400px) {
-            .categorias-container {
+
+            /* Só aplica fora do painel de detalhes — dentro do painel mantém 3 colunas */
+            .systems-grid .categorias-container {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 1000px) {
-            .categorias-container {
+            .systems-grid .categorias-container {
                 grid-template-columns: 1fr;
             }
         }
@@ -1997,64 +2013,79 @@
             body {
                 padding: 6px;
             }
+
             .container {
                 padding: 12px;
             }
+
             .header {
                 padding: 8px 15px;
                 gap: 15px;
                 margin-bottom: 6px;
             }
+
             .header-logo img {
                 height: 60px;
             }
+
             .header h1 {
                 font-size: 36px;
                 letter-spacing: 6px;
             }
+
             .header .subtitle {
                 font-size: 13px;
                 margin-top: 6px;
             }
+
             .stats {
                 gap: 15px;
                 padding: 8px 15px;
                 margin-top: 10px;
                 margin-bottom: 10px;
             }
+
             .stat-card {
                 padding: 6px 14px;
                 min-width: 80px;
             }
+
             .stat-number {
                 font-size: 18px;
             }
+
             .stat-label {
                 font-size: 9px;
             }
+
             .ship-row.compact-mode {
                 min-height: 38px;
                 margin-bottom: 1px;
                 padding: 1px 6px 1px 8px;
             }
+
             .ship-name.compact-mode {
                 font-size: 10px;
             }
+
             .ship-class.compact-mode {
                 font-size: 9px;
             }
+
             .compact-text-section {
                 font-size: 9px;
             }
+
             .compact-column-header {
                 font-size: 10px;
                 padding: 6px 8px;
             }
+
             .systems-grid.compact {
                 gap: 15px;
             }
         }
-    
+
         /* ── OVERLAY DE CARREGAMENTO ─────────────────────────────────────── */
         #loadingOverlay {
             position: fixed;
@@ -2068,6 +2099,7 @@
             transition: opacity 0.5s ease;
             overflow: hidden;
         }
+
         #loadingOverlay.fadeout {
             opacity: 0;
             pointer-events: none;
@@ -2076,40 +2108,79 @@
         /* ── MAR ── */
         .sea {
             position: absolute;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             height: 45%;
         }
+
         .wave {
             position: absolute;
             width: 200%;
             height: 100%;
             background: transparent;
         }
-        .wave svg { width: 100%; height: 100%; }
-        .wave-1 { animation: waveMove 4s linear infinite; opacity: 0.9; bottom: 10px; }
-        .wave-2 { animation: waveMove 6s linear infinite reverse; opacity: 0.5; bottom: 0; }
-        .wave-3 { animation: waveMove 5s linear infinite; opacity: 0.3; bottom: 20px; }
+
+        .wave svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wave-1 {
+            animation: waveMove 4s linear infinite;
+            opacity: 0.9;
+            bottom: 10px;
+        }
+
+        .wave-2 {
+            animation: waveMove 6s linear infinite reverse;
+            opacity: 0.5;
+            bottom: 0;
+        }
+
+        .wave-3 {
+            animation: waveMove 5s linear infinite;
+            opacity: 0.3;
+            bottom: 20px;
+        }
+
         @keyframes waveMove {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         /* ── ESTRELAS ── */
         .stars {
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 55%;
             overflow: hidden;
         }
+
         .star {
             position: absolute;
             background: white;
             border-radius: 50%;
             animation: twinkle 2s ease-in-out infinite alternate;
         }
+
         @keyframes twinkle {
-            from { opacity: 0.2; transform: scale(0.8); }
-            to   { opacity: 1;   transform: scale(1.2); }
+            from {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.2);
+            }
         }
 
         /* ── NAVIO ── */
@@ -2118,12 +2189,27 @@
             z-index: 10;
             animation: shipSail 3s ease-in-out infinite;
         }
+
         @keyframes shipSail {
-            0%   { transform: translateY(0px) rotate(0deg); }
-            25%  { transform: translateY(-6px) rotate(1deg); }
-            50%  { transform: translateY(0px) rotate(0deg); }
-            75%  { transform: translateY(-4px) rotate(-1deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-6px) rotate(1deg);
+            }
+
+            50% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            75% {
+                transform: translateY(-4px) rotate(-1deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
         }
 
         /* ── TEXTO ── */
@@ -2137,16 +2223,32 @@
             text-transform: uppercase;
             font-family: 'Segoe UI', sans-serif;
         }
+
         .loading-dots::after {
             content: '';
             animation: dots 1.4s steps(4, end) infinite;
         }
+
         @keyframes dots {
-            0%   { content: ''; }
-            25%  { content: '.'; }
-            50%  { content: '..'; }
-            75%  { content: '...'; }
-            100% { content: ''; }
+            0% {
+                content: '';
+            }
+
+            25% {
+                content: '.';
+            }
+
+            50% {
+                content: '..';
+            }
+
+            75% {
+                content: '...';
+            }
+
+            100% {
+                content: '';
+            }
         }
 
         /* ── FUMAÇA ── */
@@ -2158,78 +2260,124 @@
             gap: 4px;
             align-items: flex-end;
         }
+
         .smoke-puff {
-            width: 8px; height: 8px;
-            background: rgba(180,200,220,0.6);
+            width: 8px;
+            height: 8px;
+            background: rgba(180, 200, 220, 0.6);
             border-radius: 50%;
             animation: smokeRise 2s ease-out infinite;
         }
-        .smoke-puff:nth-child(2) { animation-delay: 0.4s; width: 6px; height: 6px; }
-        .smoke-puff:nth-child(3) { animation-delay: 0.8s; width: 5px; height: 5px; }
-        @keyframes smokeRise {
-            0%   { transform: translateY(0) scale(1);   opacity: 0.7; }
-            100% { transform: translateY(-30px) scale(2.5); opacity: 0; }
+
+        .smoke-puff:nth-child(2) {
+            animation-delay: 0.4s;
+            width: 6px;
+            height: 6px;
         }
-        
+
+        .smoke-puff:nth-child(3) {
+            animation-delay: 0.8s;
+            width: 5px;
+            height: 5px;
+        }
+
+        @keyframes smokeRise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-30px) scale(2.5);
+                opacity: 0;
+            }
+        }
+
         /* ── MODO APRESENTAÇÃO ── */
         body.modo-apresentacao,
         body.modo-apresentacao html {
             overflow: hidden !important;
         }
+
         body.modo-apresentacao #statusMessage,
         body.modo-apresentacao .filter-popup-overlay,
         body.modo-apresentacao .filter-overlay {
             display: none !important;
         }
+
         /* No fullscreen: ocultar apenas os botões do header, manter logo e título */
         body.modo-apresentacao .home-button-container {
             display: none !important;
         }
+
         body.modo-apresentacao .ship-list {
             display: none !important;
         }
+
         body.modo-apresentacao .container {
             padding: 10px 12px;
             zoom: var(--apres-zoom, 1);
             overflow: hidden;
         }
+
         body.modo-apresentacao .header {
             padding: 8px 16px;
             margin-bottom: 4px;
             gap: 16px;
         }
+
+        body.modo-apresentacao .lista-navios-container {
+            min-height: auto;
+        }
+
+        body.modo-apresentacao .categorias-container {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+
+        body.modo-apresentacao .lista-lateral {
+            max-height: 75vh;
+        }
+
         body.modo-apresentacao .header-logo img {
             height: 52px;
         }
+
         body.modo-apresentacao .header h1 {
             font-size: 28px;
             letter-spacing: 6px;
         }
+
         body.modo-apresentacao .header .subtitle {
             font-size: 11px;
             letter-spacing: 3px;
             margin-top: 3px;
         }
+
         body.modo-apresentacao .header-text {
             padding-right: 0;
         }
+
         body.modo-apresentacao .stats {
             margin-top: 4px;
             margin-bottom: 4px;
             padding: 4px 12px;
             gap: 20px;
         }
+
         body.modo-apresentacao .stat-card {
             padding: 4px 14px;
             min-width: 80px;
         }
+
         body.modo-apresentacao .stat-number {
             font-size: 16px;
             margin-bottom: 1px;
         }
+
         body.modo-apresentacao .stat-label {
             font-size: 8px;
         }
+
         /* Suprimir tooltips dos headers da tabela no fullscreen — evita sobreposição com os balões */
         body.modo-apresentacao .compact-header-section[title]:hover::after,
         body.modo-apresentacao .compact-header-section[title]:hover::before {
@@ -2241,12 +2389,15 @@
             padding: 2px 8px 2px 10px;
             margin-bottom: 1px;
         }
+
         body.modo-apresentacao .ship-name.compact-mode {
             font-size: 10px;
         }
+
         body.modo-apresentacao .ship-class.compact-mode {
             font-size: 9px;
         }
+
         body.modo-apresentacao .compact-text-section {
             font-size: 9px;
         }
@@ -2254,16 +2405,17 @@
         body.modo-apresentacao .auto-refresh-bar {
             display: none !important;
         }
+
         /* Balão flutuante do contador no modo apresentação */
         #autoRefreshFloat {
             position: fixed;
             top: 10px;
             left: 10px;
             z-index: 9999999;
-            background: rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255, 255, 255, 0.4);
             font-size: 9px;
             font-family: 'Segoe UI', sans-serif;
             letter-spacing: 0.5px;
@@ -2274,18 +2426,22 @@
             backdrop-filter: blur(2px);
             transition: all 0.3s;
         }
+
         #autoRefreshFloat:hover {
-            background: rgba(0,0,0,0.5);
-            color: rgba(255,255,255,0.7);
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.7);
         }
+
         #autoRefreshFloat .refresh-dot {
             width: 5px;
             height: 5px;
         }
+
         body.modo-apresentacao .dashboard {
             height: auto;
             overflow: hidden;
         }
+
         body.modo-apresentacao #systemsGrid {
             overflow: visible;
         }
@@ -2297,10 +2453,10 @@
             top: 10px;
             right: 10px;
             z-index: 9999999;
-            background: rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255, 255, 255, 0.25);
             font-size: 9px;
             font-family: 'Segoe UI', sans-serif;
             letter-spacing: 0.5px;
@@ -2313,103 +2469,112 @@
             backdrop-filter: blur(2px);
             pointer-events: all;
         }
+
         #btnSairApresentacao:hover {
-            background: rgba(0,0,0,0.55);
-            color: rgba(255,255,255,0.8);
-            border-color: rgba(255,255,255,0.2);
+            background: rgba(0, 0, 0, 0.55);
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
         }
+
         #btnSairApresentacao svg {
             width: 8px;
             height: 8px;
-            fill: rgba(255,255,255,0.25);
+            fill: rgba(255, 255, 255, 0.25);
             transition: fill 0.3s;
         }
+
         #btnSairApresentacao:hover svg {
-            fill: rgba(255,255,255,0.8);
+            fill: rgba(255, 255, 255, 0.8);
         }
-        </style>
+    </style>
 </head>
 
 <body>
-<div id="loadingOverlay">
+    <div id="loadingOverlay">
 
-    <!-- Estrelas -->
-    <div class="stars" id="starsContainer"></div>
+        <!-- Estrelas -->
+        <div class="stars" id="starsContainer"></div>
 
-    <!-- Navio -->
-    <div class="ship-container">
-        <div class="smoke">
-            <div class="smoke-puff"></div>
-            <div class="smoke-puff"></div>
-            <div class="smoke-puff"></div>
+        <!-- Navio -->
+        <div class="ship-container">
+            <div class="smoke">
+                <div class="smoke-puff"></div>
+                <div class="smoke-puff"></div>
+                <div class="smoke-puff"></div>
+            </div>
+            <svg width="140" height="90" viewBox="0 0 140 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 62 L18 75 L122 75 L130 62 Z" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1.5" />
+                <path d="M14 70 L126 70" stroke="#2d6a9f" stroke-width="1" opacity="0.6" />
+                <rect x="25" y="45" width="35" height="18" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1" />
+                <rect x="62" y="50" width="40" height="13" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1" />
+                <rect x="30" y="33" width="25" height="13" rx="2" fill="#245c8a" stroke="#4fc3f7" stroke-width="1" />
+                <rect x="33" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8" />
+                <rect x="40" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8" />
+                <rect x="47" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.6" />
+                <rect x="38" y="20" width="10" height="14" rx="2" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1" />
+                <rect x="36" y="18" width="14" height="5" rx="1" fill="#c0392b" />
+                <line x1="75" y1="15" x2="75" y2="50" stroke="#2d6a9f" stroke-width="1.5" />
+                <path d="M75 15 L90 20 L75 25 Z" fill="#27ae60" opacity="0.9" />
+                <rect x="28" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6" />
+                <rect x="35" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6" />
+                <rect x="42" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6" />
+                <rect x="65" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5" />
+                <rect x="73" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5" />
+                <rect x="81" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5" />
+                <circle cx="20" cy="68" r="3" fill="#2d6a9f" opacity="0.7" />
+            </svg>
         </div>
-        <svg width="140" height="90" viewBox="0 0 140 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 62 L18 75 L122 75 L130 62 Z" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1.5"/>
-            <path d="M14 70 L126 70" stroke="#2d6a9f" stroke-width="1" opacity="0.6"/>
-            <rect x="25" y="45" width="35" height="18" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1"/>
-            <rect x="62" y="50" width="40" height="13" rx="2" fill="#1e4976" stroke="#2d6a9f" stroke-width="1"/>
-            <rect x="30" y="33" width="25" height="13" rx="2" fill="#245c8a" stroke="#4fc3f7" stroke-width="1"/>
-            <rect x="33" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8"/>
-            <rect x="40" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.8"/>
-            <rect x="47" y="36" width="5" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
-            <rect x="38" y="20" width="10" height="14" rx="2" fill="#1a3a5c" stroke="#2d6a9f" stroke-width="1"/>
-            <rect x="36" y="18" width="14" height="5" rx="1" fill="#c0392b"/>
-            <line x1="75" y1="15" x2="75" y2="50" stroke="#2d6a9f" stroke-width="1.5"/>
-            <path d="M75 15 L90 20 L75 25 Z" fill="#27ae60" opacity="0.9"/>
-            <rect x="28" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
-            <rect x="35" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
-            <rect x="42" y="48" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.6"/>
-            <rect x="65" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
-            <rect x="73" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
-            <rect x="81" y="53" width="4" height="4" rx="1" fill="#4fc3f7" opacity="0.5"/>
-            <circle cx="20" cy="68" r="3" fill="#2d6a9f" opacity="0.7"/>
-        </svg>
+
+        <!-- Mar com ondas -->
+        <div class="sea">
+            <div class="wave wave-1">
+                <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0,60 C180,20 360,100 540,60 C720,20 900,100 1080,60 C1260,20 1440,80 1440,60 L1440,120 L0,120 Z"
+                        fill="#1a5276" opacity="0.9" />
+                    <path
+                        d="M0,80 C180,40 360,110 540,80 C720,40 900,110 1080,80 C1260,40 1440,90 1440,80 L1440,120 L0,120 Z"
+                        fill="#154360" opacity="0.7" />
+                </svg>
+            </div>
+            <div class="wave wave-2">
+                <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0,70 C240,30 480,110 720,70 C960,30 1200,100 1440,70 L1440,120 L0,120 Z" fill="#0e6655"
+                        opacity="0.4" />
+                </svg>
+            </div>
+            <div class="wave wave-3">
+                <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0,50 C360,10 720,90 1080,50 C1260,30 1440,70 1440,50 L1440,120 L0,120 Z" fill="#1a5276"
+                        opacity="0.3" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="loading-text">Buscando dados<span class="loading-dots"></span></div>
     </div>
 
-    <!-- Mar com ondas -->
-    <div class="sea">
-        <div class="wave wave-1">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,60 C180,20 360,100 540,60 C720,20 900,100 1080,60 C1260,20 1440,80 1440,60 L1440,120 L0,120 Z" fill="#1a5276" opacity="0.9"/>
-                <path d="M0,80 C180,40 360,110 540,80 C720,40 900,110 1080,80 C1260,40 1440,90 1440,80 L1440,120 L0,120 Z" fill="#154360" opacity="0.7"/>
-            </svg>
-        </div>
-        <div class="wave wave-2">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,70 C240,30 480,110 720,70 C960,30 1200,100 1440,70 L1440,120 L0,120 Z" fill="#0e6655" opacity="0.4"/>
-            </svg>
-        </div>
-        <div class="wave wave-3">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,50 C360,10 720,90 1080,50 C1260,30 1440,70 1440,50 L1440,120 L0,120 Z" fill="#1a5276" opacity="0.3"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="loading-text">Buscando dados<span class="loading-dots"></span></div>
-</div>
-
-<script>
-// Gerar estrelas aleatórias
-(function() {
-    const c = document.getElementById('starsContainer');
-    if (!c) return;
-    for (let i = 0; i < 60; i++) {
-        const s = document.createElement('div');
-        s.className = 'star';
-        const size = Math.random() * 2.5 + 0.5;
-        s.style.cssText = [
-            'width:' + size + 'px',
-            'height:' + size + 'px',
-            'left:' + Math.random() * 100 + '%',
-            'top:' + Math.random() * 100 + '%',
-            'animation-delay:' + Math.random() * 3 + 's',
-            'animation-duration:' + (1.5 + Math.random() * 2) + 's'
-        ].join(';');
-        c.appendChild(s);
-    }
-})();
-</script>
+    <script>
+        // Gerar estrelas aleatórias
+        (function () {
+            const c = document.getElementById('starsContainer');
+            if (!c) return;
+            for (let i = 0; i < 60; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                const size = Math.random() * 2.5 + 0.5;
+                s.style.cssText = [
+                    'width:' + size + 'px',
+                    'height:' + size + 'px',
+                    'left:' + Math.random() * 100 + '%',
+                    'top:' + Math.random() * 100 + '%',
+                    'animation-delay:' + Math.random() * 3 + 's',
+                    'animation-duration:' + (1.5 + Math.random() * 2) + 's'
+                ].join(';');
+                c.appendChild(s);
+            }
+        })();
+    </script>
 
     <div class="container">
         <div class="header">
@@ -2425,7 +2590,7 @@
                 <div style="display:flex;flex-direction:row;gap:10px;align-self:flex-end;">
                     <button class="btn-home" id="btnApresentacao" onclick="ativarModoApresentacao()">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M5 5h5V3H3v7h2V5zm9-2v2h5v5h2V3h-7zm-9 14H3v7h7v-2H5v-5zm14 5h-5v2h7v-7h-2v5z"/>
+                            <path d="M5 5h5V3H3v7h2V5zm9-2v2h5v5h2V3h-7zm-9 14H3v7h7v-2H5v-5zm14 5h-5v2h7v-7h-2v5z" />
                         </svg>
                         <span class="tooltip-home">Modo Apresentação</span>
                     </button>
@@ -2439,7 +2604,7 @@
                 <div style="display:flex;flex-direction:row;gap:10px;">
                     <button class="btn-home btn-sort" id="btnSort" onclick="toggleSortMode()" title="">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+                            <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z" />
                         </svg>
                         <span class="tooltip-home">Ordenar: Ordem Alfabética</span>
                     </button>
@@ -3832,11 +3997,11 @@
             // Manutenção também é considerado preenchido
             if (eNavioManutencao(nome)) return true;
             // Verificar se tem pelo menos um campo de status não-null
-            const campos = ['MotorPrincipal','MCAs','GrupoDestilatorio','EquipeFundeio',
-                'CaldeiraAuxiliar','DGEBBAIncendio','SistemaCargaDesc','MaquinaLeme',
-                'Purificadores','SistemasNavegacao','EstadoGeralConves','EstadoGeralPM',
-                'TrifixPercentual','TripulantesVencidos','CrewMatrix','CertTripulante',
-                'PendenciaDoc','CondicaoClasse','ObsVetting'];
+            const campos = ['MotorPrincipal', 'MCAs', 'GrupoDestilatorio', 'EquipeFundeio',
+                'CaldeiraAuxiliar', 'DGEBBAIncendio', 'SistemaCargaDesc', 'MaquinaLeme',
+                'Purificadores', 'SistemasNavegacao', 'EstadoGeralConves', 'EstadoGeralPM',
+                'TrifixPercentual', 'TripulantesVencidos', 'CrewMatrix', 'CertTripulante',
+                'PendenciaDoc', 'CondicaoClasse', 'ObsVetting'];
             return campos.some(c => raw[c] !== null && raw[c] !== undefined);
         }
 
@@ -3859,7 +4024,7 @@
             if (currentSortMode !== 'preenchidos') {
                 rows.sort((a, b) => {
                     return (parseInt(a.getAttribute('data-ship-number')) || 0) -
-                           (parseInt(b.getAttribute('data-ship-number')) || 0);
+                        (parseInt(b.getAttribute('data-ship-number')) || 0);
                 });
             } else {
                 // Ordem alfabética pura (A-Z)
@@ -4212,34 +4377,34 @@
             // ── DADOS MOCK com nomes de campo EXATOS do SharePoint ───────────
             if (MODO_TESTE) {
                 console.log('🧪 MODO TESTE ativo — usando dados simulados');
-                const vazio = { MotorPrincipal:null,MCAs:null,GrupoDestilatorio:null,EquipeFundeio:null,CaldeiraAuxiliar:null,DGEBBAIncendio:null,SistemaCargaDesc:null,MaquinaLeme:null,Purificadores:null,SistemasNavegacao:null,EstadoGeralConves:null,EstadoGeralPM:null,TrifixPercentual:null,TripulantesVencidos:null,CrewMatrix:null,CertTripulante:null,PendenciaDoc:null,CondicaoClasse:null,ObsVetting:null,IDOSD:null,ReqOutstanding:null,SRsOutstanding:null,CMT:null,CMT_MAT:null,CFM:null,CFM_MAT:null,IMT:null,IMT_MAT:null,Status:null };
+                const vazio = { MotorPrincipal: null, MCAs: null, GrupoDestilatorio: null, EquipeFundeio: null, CaldeiraAuxiliar: null, DGEBBAIncendio: null, SistemaCargaDesc: null, MaquinaLeme: null, Purificadores: null, SistemasNavegacao: null, EstadoGeralConves: null, EstadoGeralPM: null, TrifixPercentual: null, TripulantesVencidos: null, CrewMatrix: null, CertTripulante: null, PendenciaDoc: null, CondicaoClasse: null, ObsVetting: null, IDOSD: null, ReqOutstanding: null, SRsOutstanding: null, CMT: null, CMT_MAT: null, CFM: null, CFM_MAT: null, IMT: null, IMT_MAT: null, Status: null };
                 return [
-                    { NomeNavio:'ANITA GARIBALDI',          ...vazio },
-                    { NomeNavio:'CASTRO ALVES',              ...vazio },
-                    { NomeNavio:'CARLOS DRUMMOND DE ANDRADE',...vazio },
-                    { NomeNavio:'OLAVO BILAC',               ...vazio },
-                    { NomeNavio:'GARRINCHA',                 ...vazio, MotorPrincipal:'1',MCAs:'1',GrupoDestilatorio:'1',EquipeFundeio:'1',CaldeiraAuxiliar:'1',DGEBBAIncendio:'1',SistemaCargaDesc:'2',MaquinaLeme:'1',Purificadores:'1',SistemasNavegacao:'1',EstadoGeralConves:'1',EstadoGeralPM:'1',TrifixPercentual:100,TripulantesVencidos:'2',CrewMatrix:'1',CertTripulante:'2',PendenciaDoc:'1',CondicaoClasse:'1',ObsVetting:5,IDOSD:100,ReqOutstanding:152,SRsOutstanding:22 },
-                    { NomeNavio:'PORTINARI',                 ...vazio },
-                    { NomeNavio:'JOAO CANDIDO',              ...vazio },
-                    { NomeNavio:'DRAGAO DO MAR',             ...vazio },
-                    { NomeNavio:'HENRIQUE DIAS',             ...vazio },
-                    { NomeNavio:'ANDRE REBOUCAS',            ...vazio },
-                    { NomeNavio:'MARCILIO DIAS',             ...vazio },
-                    { NomeNavio:'JOSE DO PATROCINIO',        ...vazio },
-                    { NomeNavio:'MACHADO DE ASSIS',          ...vazio, MotorPrincipal:'1',MCAs:'2',GrupoDestilatorio:'1',EquipeFundeio:'1',CaldeiraAuxiliar:'1',DGEBBAIncendio:'1',SistemaCargaDesc:'3',MaquinaLeme:'1',Purificadores:'3',SistemasNavegacao:'1',EstadoGeralConves:'3',EstadoGeralPM:'1',TrifixPercentual:100,TripulantesVencidos:'2',CrewMatrix:'2',CertTripulante:'1',PendenciaDoc:'1',CondicaoClasse:'1',ObsVetting:7,IDOSD:100,ReqOutstanding:287,SRsOutstanding:31 },
-                    { NomeNavio:'MILTON SANTOS',             ...vazio },
-                    { NomeNavio:'ABDIAS NASCIMENTO',         ...vazio, MotorPrincipal:'2',MCAs:'1',GrupoDestilatorio:'3',EquipeFundeio:'1',CaldeiraAuxiliar:'1',DGEBBAIncendio:'1',SistemaCargaDesc:'1',MaquinaLeme:'1',Purificadores:'1',SistemasNavegacao:'1',EstadoGeralConves:'2',EstadoGeralPM:'1',TrifixPercentual:90,TripulantesVencidos:'2',CrewMatrix:'1',CertTripulante:'1',PendenciaDoc:'1',CondicaoClasse:'1',ObsVetting:17,IDOSD:100,ReqOutstanding:203,SRsOutstanding:44 },
-                    { NomeNavio:'ZUMBI DOS PALMARES',        ...vazio },
-                    { NomeNavio:'CELSO FURTADO',             ...vazio },
-                    { NomeNavio:'SERGIO BUARQUE DE HOLANDA', ...vazio },
-                    { NomeNavio:'ROMULO ALMEIDA',            ...vazio },
-                    { NomeNavio:'JOSE ALENCAR',              ...vazio },
-                    { NomeNavio:'LUCIO COSTA',               ...vazio },
-                    { NomeNavio:'DARCY RIBEIRO',             ...vazio },
-                    { NomeNavio:'BARBOSA LIMA SOBRINHO',     ...vazio },
-                    { NomeNavio:'OSCAR NIEMEYER',            ...vazio },
-                    { NomeNavio:'GILBERTO FREYRE',           ...vazio },
-                    { NomeNavio:'JORGE AMADO',               ...vazio }
+                    { NomeNavio: 'ANITA GARIBALDI', ...vazio },
+                    { NomeNavio: 'CASTRO ALVES', ...vazio },
+                    { NomeNavio: 'CARLOS DRUMMOND DE ANDRADE', ...vazio },
+                    { NomeNavio: 'OLAVO BILAC', ...vazio },
+                    { NomeNavio: 'GARRINCHA', ...vazio, MotorPrincipal: '1', MCAs: '1', GrupoDestilatorio: '1', EquipeFundeio: '1', CaldeiraAuxiliar: '1', DGEBBAIncendio: '1', SistemaCargaDesc: '2', MaquinaLeme: '1', Purificadores: '1', SistemasNavegacao: '1', EstadoGeralConves: '1', EstadoGeralPM: '1', TrifixPercentual: 100, TripulantesVencidos: '2', CrewMatrix: '1', CertTripulante: '2', PendenciaDoc: '1', CondicaoClasse: '1', ObsVetting: 5, IDOSD: 100, ReqOutstanding: 152, SRsOutstanding: 22 },
+                    { NomeNavio: 'PORTINARI', ...vazio },
+                    { NomeNavio: 'JOAO CANDIDO', ...vazio },
+                    { NomeNavio: 'DRAGAO DO MAR', ...vazio },
+                    { NomeNavio: 'HENRIQUE DIAS', ...vazio },
+                    { NomeNavio: 'ANDRE REBOUCAS', ...vazio },
+                    { NomeNavio: 'MARCILIO DIAS', ...vazio },
+                    { NomeNavio: 'JOSE DO PATROCINIO', ...vazio },
+                    { NomeNavio: 'MACHADO DE ASSIS', ...vazio, MotorPrincipal: '1', MCAs: '2', GrupoDestilatorio: '1', EquipeFundeio: '1', CaldeiraAuxiliar: '1', DGEBBAIncendio: '1', SistemaCargaDesc: '3', MaquinaLeme: '1', Purificadores: '3', SistemasNavegacao: '1', EstadoGeralConves: '3', EstadoGeralPM: '1', TrifixPercentual: 100, TripulantesVencidos: '2', CrewMatrix: '2', CertTripulante: '1', PendenciaDoc: '1', CondicaoClasse: '1', ObsVetting: 7, IDOSD: 100, ReqOutstanding: 287, SRsOutstanding: 31 },
+                    { NomeNavio: 'MILTON SANTOS', ...vazio },
+                    { NomeNavio: 'ABDIAS NASCIMENTO', ...vazio, MotorPrincipal: '2', MCAs: '1', GrupoDestilatorio: '3', EquipeFundeio: '1', CaldeiraAuxiliar: '1', DGEBBAIncendio: '1', SistemaCargaDesc: '1', MaquinaLeme: '1', Purificadores: '1', SistemasNavegacao: '1', EstadoGeralConves: '2', EstadoGeralPM: '1', TrifixPercentual: 90, TripulantesVencidos: '2', CrewMatrix: '1', CertTripulante: '1', PendenciaDoc: '1', CondicaoClasse: '1', ObsVetting: 17, IDOSD: 100, ReqOutstanding: 203, SRsOutstanding: 44 },
+                    { NomeNavio: 'ZUMBI DOS PALMARES', ...vazio },
+                    { NomeNavio: 'CELSO FURTADO', ...vazio },
+                    { NomeNavio: 'SERGIO BUARQUE DE HOLANDA', ...vazio },
+                    { NomeNavio: 'ROMULO ALMEIDA', ...vazio },
+                    { NomeNavio: 'JOSE ALENCAR', ...vazio },
+                    { NomeNavio: 'LUCIO COSTA', ...vazio },
+                    { NomeNavio: 'DARCY RIBEIRO', ...vazio },
+                    { NomeNavio: 'BARBOSA LIMA SOBRINHO', ...vazio },
+                    { NomeNavio: 'OSCAR NIEMEYER', ...vazio },
+                    { NomeNavio: 'GILBERTO FREYRE', ...vazio },
+                    { NomeNavio: 'JORGE AMADO', ...vazio }
                 ];
             }
             // ── FIM DADOS MOCK ────────────────────────────────────────────────
@@ -4302,8 +4467,8 @@
             const s = String(valor).trim().toLowerCase();
 
             // Power Automate retorna o label completo em português
-            if (s.startsWith('verde'))    return 'green';
-            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('verde')) return 'green';
+            if (s.startsWith('amarelo')) return 'yellow';
             if (s.startsWith('vermelho')) return 'red';
 
             // Fallback: número 1/2/3 (mock ou REST API direta)
@@ -4323,8 +4488,8 @@
             }
             const s = String(percentual).trim().toLowerCase();
             // Choice com texto em português
-            if (s.startsWith('verde'))    return 'green';
-            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('verde')) return 'green';
+            if (s.startsWith('amarelo')) return 'yellow';
             if (s.startsWith('vermelho')) return 'red';
             // Número direto (mock)
             const val = parseFloat(s);
@@ -4358,8 +4523,8 @@
             }
             const s = String(observacoes).trim().toLowerCase();
             // Choice com texto em português
-            if (s.startsWith('verde'))    return 'green';
-            if (s.startsWith('amarelo'))  return 'yellow';
+            if (s.startsWith('verde')) return 'green';
+            if (s.startsWith('amarelo')) return 'yellow';
             if (s.startsWith('vermelho')) return 'red';
             // Número direto (mock)
             const val = parseFloat(s);
@@ -4518,11 +4683,11 @@
             };
             const str = s => (s && s.trim()) ? s.trim() : '';
             tripulacaoNavios[nomeNavio] = {
-                CMT:     cap(item.CMT)     || vazio,
+                CMT: cap(item.CMT) || vazio,
                 CMT_MAT: str(item.CMT_MAT),
-                CFM:     cap(item.CFM)     || vazio,
+                CFM: cap(item.CFM) || vazio,
                 CFM_MAT: str(item.CFM_MAT),
-                IMT:     cap(item.IMT)     || vazio,
+                IMT: cap(item.IMT) || vazio,
                 IMT_MAT: str(item.IMT_MAT)
             };
         }
@@ -4533,7 +4698,7 @@
             // ReqOutstanding e SRsOutstanding são Número inteiro
             const pct = v => {
                 if (v === null || v === undefined || v === '') return 0;
-                let n = parseFloat(String(v).replace('%','').trim());
+                let n = parseFloat(String(v).replace('%', '').trim());
                 if (isNaN(n)) return 0;
                 // Se veio como decimal 0-1, converter para 0-100
                 if (n > 0 && n <= 1) n = Math.round(n * 100);
@@ -4541,12 +4706,12 @@
             };
             const num = v => {
                 if (v === null || v === undefined || v === '') return 0;
-                return parseInt(String(v).replace('%','').trim()) || 0;
+                return parseInt(String(v).replace('%', '').trim()) || 0;
             };
             dadosIndicadores[nomeNavio] = {
-                idoSD:           pct(item.IDOSD),
+                idoSD: pct(item.IDOSD),
                 reqsOutstanding: num(item.ReqOutstanding),
-                srsOutstanding:  num(item.SRsOutstanding)
+                srsOutstanding: num(item.SRsOutstanding)
             };
         }
 
@@ -4560,60 +4725,60 @@
             const c = v => {
                 if (isManutencao) return 'azul';
                 const eng = converterParaCor(v);
-                return { green:'verde', yellow:'amarelo', red:'vermelho', gray:'cinza' }[eng] || 'cinza';
+                return { green: 'verde', yellow: 'amarelo', red: 'vermelho', gray: 'cinza' }[eng] || 'cinza';
             };
             const s = v => (v && v !== null) ? String(v) : '';  // obs segura
             statusDetalhesNavios[nomeNavio] = {
                 equipamentos: {
-                    'Motor principal':                        { cor: c(item.MotorPrincipal),    obs: s(item.MotorPrincipalObs) },
-                    'MCAs':                                   { cor: c(item.MCAs),              obs: s(item.MCAsObs) },
-                    'Grupo destilatório':                     { cor: c(item.GrupoDestilatorio), obs: s(item.GrupoDestilatorioObs) },
-                    'Equip. fundeio, amarração e guindastes': { cor: c(item.EquipeFundeio),     obs: s(item.EquipeFundeioObs) },
-                    'Caldeira auxiliar':                      { cor: c(item.CaldeiraAuxiliar),  obs: s(item.CaldeiraAuxiliarObs) },
-                    'DGE E BBA incêndio emergência':          { cor: c(item.DGEBBAIncendio),    obs: s(item.DGEBBAObs) },
-                    'Sistema de carga e descarga':            { cor: c(item.SistemaCargaDesc),  obs: s(item.SistemaCargaObs) },
-                    'Máquina do leme':                        { cor: c(item.MaquinaLeme),       obs: s(item.MaquinaLemeObs) },
-                    'Purificadores':                          { cor: c(item.Purificadores),     obs: s(item.PurificadoresObs) },
-                    'Sistemas de navegação':                  { cor: c(item.SistemasNavegacao), obs: s(item.SistemasNavObs) },
-                    'Estado geral convés':                    { cor: c(item.EstadoGeralConves), obs: s(item.EstadoGeralConvesObs) },
-                    'Estado geral PM':                        { cor: c(item.EstadoGeralPM),     obs: s(item.EstadoPMObs) }
+                    'Motor principal': { cor: c(item.MotorPrincipal), obs: s(item.MotorPrincipalObs) },
+                    'MCAs': { cor: c(item.MCAs), obs: s(item.MCAsObs) },
+                    'Grupo destilatório': { cor: c(item.GrupoDestilatorio), obs: s(item.GrupoDestilatorioObs) },
+                    'Equip. fundeio, amarração e guindastes': { cor: c(item.EquipeFundeio), obs: s(item.EquipeFundeioObs) },
+                    'Caldeira auxiliar': { cor: c(item.CaldeiraAuxiliar), obs: s(item.CaldeiraAuxiliarObs) },
+                    'DGE E BBA incêndio emergência': { cor: c(item.DGEBBAIncendio), obs: s(item.DGEBBAObs) },
+                    'Sistema de carga e descarga': { cor: c(item.SistemaCargaDesc), obs: s(item.SistemaCargaObs) },
+                    'Máquina do leme': { cor: c(item.MaquinaLeme), obs: s(item.MaquinaLemeObs) },
+                    'Purificadores': { cor: c(item.Purificadores), obs: s(item.PurificadoresObs) },
+                    'Sistemas de navegação': { cor: c(item.SistemasNavegacao), obs: s(item.SistemasNavObs) },
+                    'Estado geral convés': { cor: c(item.EstadoGeralConves), obs: s(item.EstadoGeralConvesObs) },
+                    'Estado geral PM': { cor: c(item.EstadoGeralPM), obs: s(item.EstadoPMObs) }
                 },
                 pessoal: {
-                    'Trifix %':                    { cor: c(item.TrifixPercentual), obs: s(item.TrifixObs) },
-                    'Tripulantes vencidos':        { cor: c(item.TripulantesVencidos),            obs: s(item.TripulantesVencidosObs) },
-                    'Crew Matrix':                 { cor: c(item.CrewMatrix),                     obs: s(item.CrewMatrixObs) },
-                    'Certificação de Tripulante':  { cor: c(item.CertTripulante),                 obs: s(item.CertTripulanteObs) }
+                    'Trifix %': { cor: c(item.TrifixPercentual), obs: s(item.TrifixObs) },
+                    'Tripulantes vencidos': { cor: c(item.TripulantesVencidos), obs: s(item.TripulantesVencidosObs) },
+                    'Crew Matrix': { cor: c(item.CrewMatrix), obs: s(item.CrewMatrixObs) },
+                    'Certificação de Tripulante': { cor: c(item.CertTripulante), obs: s(item.CertTripulanteObs) }
                 },
                 certificacao: {
-                    'Pendência de Documentação Navio': { cor: c(item.PendenciaDoc),    obs: s(item.PendenciaDocObs) },
-                    'Condição de classe':              { cor: c(item.CondicaoClasse),  obs: s(item.CondicaoClasseObs) },
-                    'Obs Vetting':                     { cor: c(item.ObsVetting), obs: s(item.ObsVettingObs) }
+                    'Pendência de Documentação Navio': { cor: c(item.PendenciaDoc), obs: s(item.PendenciaDocObs) },
+                    'Condição de classe': { cor: c(item.CondicaoClasse), obs: s(item.CondicaoClasseObs) },
+                    'Obs Vetting': { cor: c(item.ObsVetting), obs: s(item.ObsVettingObs) }
                 }
             };
         }
 
         // ── TOOLTIP DOS ÍCONES DE CATEGORIA (position:fixed — sempre visível) ──
-        (function() {
+        (function () {
             const tip = document.createElement('div');
             tip.className = 'icon-tooltip';
             document.body.appendChild(tip);
 
-            document.addEventListener('mouseover', function(e) {
+            document.addEventListener('mouseover', function (e) {
                 const el = e.target.closest('.compact-header-bolinha');
                 if (el && el.title) {
                     const r = el.getBoundingClientRect();
                     tip.textContent = el.title;
                     tip.style.left = (r.left + r.width / 2 - tip.offsetWidth / 2) + 'px';
-                    tip.style.top  = (r.top - tip.offsetHeight - 10) + 'px';
+                    tip.style.top = (r.top - tip.offsetHeight - 10) + 'px';
                     tip.classList.add('visible');
                     // recalcular após render
                     requestAnimationFrame(() => {
                         tip.style.left = (r.left + r.width / 2 - tip.offsetWidth / 2) + 'px';
-                        tip.style.top  = (r.top - tip.offsetHeight - 10) + 'px';
+                        tip.style.top = (r.top - tip.offsetHeight - 10) + 'px';
                     });
                 }
             });
-            document.addEventListener('mouseout', function(e) {
+            document.addEventListener('mouseout', function (e) {
                 if (e.target.closest('.compact-header-bolinha')) {
                     tip.classList.remove('visible');
                 }
@@ -4629,8 +4794,8 @@
             // 1. Fullscreen real (= F11)
             const el = document.documentElement;
             const req = el.requestFullscreen || el.webkitRequestFullscreen
-                     || el.mozRequestFullScreen || el.msRequestFullscreen;
-            if (req) req.call(el).catch(() => {});
+                || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (req) req.call(el).catch(() => { });
 
             // 2. Ativar modo apresentação
             document.body.classList.add('modo-apresentacao');
@@ -4657,14 +4822,14 @@
             const larguraDisponivel = window.screen.width;
             // Altura do conteúdo: header + stats + grid + padding
             const header = document.querySelector('.header');
-            const stats  = document.querySelector('.stats');
-            const grid   = document.getElementById('systemsGrid');
+            const stats = document.querySelector('.stats');
+            const grid = document.getElementById('systemsGrid');
             if (!stats || !grid) return;
             const alturaConteudo = (header ? header.offsetHeight : 0)
-                                 + (stats.offsetHeight || 80)
-                                 + (grid.scrollHeight || 600)
-                                 + 30; // padding container
-            const zoomAltura  = alturaDisponivel / alturaConteudo;
+                + (stats.offsetHeight || 80)
+                + (grid.scrollHeight || 600)
+                + 30; // padding container
+            const zoomAltura = alturaDisponivel / alturaConteudo;
             const zoomLargura = larguraDisponivel / (container.scrollWidth || larguraDisponivel);
             const zoom = Math.min(zoomAltura, zoomLargura, 1); // nunca ampliar, só reduzir
             document.documentElement.style.setProperty('--apres-zoom', zoom.toFixed(3));
@@ -4673,7 +4838,7 @@
         function sairModoApresentacao() {
             // 1. Sair do fullscreen
             const exitFn = document.exitFullscreen || document.webkitExitFullscreen
-                        || document.mozCancelFullScreen || document.msExitFullscreen;
+                || document.mozCancelFullScreen || document.msExitFullscreen;
             if (exitFn && (document.fullscreenElement || document.webkitFullscreenElement)) {
                 exitFn.call(document);
             }
@@ -4698,10 +4863,10 @@
                 sairModoApresentacao();
             }
         }
-        document.addEventListener('fullscreenchange',       _onFullscreenChange);
+        document.addEventListener('fullscreenchange', _onFullscreenChange);
         document.addEventListener('webkitfullscreenchange', _onFullscreenChange);
-        document.addEventListener('mozfullscreenchange',    _onFullscreenChange);
-        document.addEventListener('MSFullscreenChange',     _onFullscreenChange);
+        document.addEventListener('mozfullscreenchange', _onFullscreenChange);
+        document.addEventListener('MSFullscreenChange', _onFullscreenChange);
         // ─────────────────────────────────────────────────────────────────
 
         // Inicializar
@@ -4724,24 +4889,24 @@
             const cinza = { cor: 'cinza', obs: '' };
             statusDetalhesNavios[nomeNavio] = {
                 equipamentos: {
-                    'Motor principal': {...cinza}, 'MCAs': {...cinza}, 'Grupo destilatório': {...cinza},
-                    'Equip. fundeio, amarração e guindastes': {...cinza}, 'Caldeira auxiliar': {...cinza},
-                    'DGE E BBA incêndio emergência': {...cinza}, 'Sistema de carga e descarga': {...cinza},
-                    'Máquina do leme': {...cinza}, 'Purificadores': {...cinza},
-                    'Sistemas de navegação': {...cinza}, 'Estado geral convés': {...cinza},
-                    'Estado geral PM': {...cinza}
+                    'Motor principal': { ...cinza }, 'MCAs': { ...cinza }, 'Grupo destilatório': { ...cinza },
+                    'Equip. fundeio, amarração e guindastes': { ...cinza }, 'Caldeira auxiliar': { ...cinza },
+                    'DGE E BBA incêndio emergência': { ...cinza }, 'Sistema de carga e descarga': { ...cinza },
+                    'Máquina do leme': { ...cinza }, 'Purificadores': { ...cinza },
+                    'Sistemas de navegação': { ...cinza }, 'Estado geral convés': { ...cinza },
+                    'Estado geral PM': { ...cinza }
                 },
                 pessoal: {
-                    'Trifix %': {...cinza}, 'Tripulantes vencidos': {...cinza},
-                    'Crew Matrix': {...cinza}, 'Certificação de Tripulante': {...cinza}
+                    'Trifix %': { ...cinza }, 'Tripulantes vencidos': { ...cinza },
+                    'Crew Matrix': { ...cinza }, 'Certificação de Tripulante': { ...cinza }
                 },
                 certificacao: {
-                    'Pendência de Documentação Navio': {...cinza},
-                    'Condição de classe': {...cinza}, 'Obs Vetting': {...cinza}
+                    'Pendência de Documentação Navio': { ...cinza },
+                    'Condição de classe': { ...cinza }, 'Obs Vetting': { ...cinza }
                 }
             };
             dadosIndicadores[nomeNavio] = { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
-            tripulacaoNavios[nomeNavio]  = { CMT: '---', CMT_MAT: '', CFM: '---', CFM_MAT: '', IMT: '---', IMT_MAT: '' };
+            tripulacaoNavios[nomeNavio] = { CMT: '---', CMT_MAT: '', CFM: '---', CFM_MAT: '', IMT: '---', IMT_MAT: '' };
         }
 
         async function recarregarDadosSilencioso() {
@@ -4750,7 +4915,7 @@
 
             // Selecionar dado mais recente por navio
             const novosDados = {};
-            const datasMap   = {};
+            const datasMap = {};
             dados.forEach(item => {
                 const nomeNavio = (item.NomeNavio && typeof item.NomeNavio === 'object')
                     ? item.NomeNavio.Value : item.NomeNavio;
@@ -4758,7 +4923,7 @@
                 const dataAtual = item.DataPreenchimento ? new Date(item.DataPreenchimento) : new Date(0);
                 if (!novosDados[nomeNavio] || dataAtual > datasMap[nomeNavio]) {
                     novosDados[nomeNavio] = item;
-                    datasMap[nomeNavio]   = dataAtual;
+                    datasMap[nomeNavio] = dataAtual;
                 }
             });
 
@@ -4788,7 +4953,7 @@
         }
 
         function iniciarContadorAtualizacao() {
-            const dot   = document.getElementById('refreshDot');
+            const dot = document.getElementById('refreshDot');
             const label = document.getElementById('refreshLabel');
             if (!dot || !label) return;
 
@@ -4822,9 +4987,9 @@
                         });
                 } else {
                     const min = Math.floor(seg / 60);
-                    const s   = seg % 60;
+                    const s = seg % 60;
                     const txt = min > 0
-                        ? `Próxima atualização em ${min}m ${s.toString().padStart(2,'0')}s`
+                        ? `Próxima atualização em ${min}m ${s.toString().padStart(2, '0')}s`
                         : `Próxima atualização em ${s}s`;
                     label.textContent = txt;
                     const lf = document.getElementById('refreshLabelFloat');
@@ -5288,7 +5453,7 @@
                 if (currentSortMode === 'preenchidos') {
                     const allRows = Array.from(systemsGrid.querySelectorAll('.ship-row'));
                     const visibleRows = allRows.filter(r => r.style.display !== 'none');
-                    const hiddenRows  = allRows.filter(r => r.style.display === 'none');
+                    const hiddenRows = allRows.filter(r => r.style.display === 'none');
                     sortearRows(visibleRows);
                     visibleRows.forEach(r => systemsGrid.appendChild(r));
                     hiddenRows.forEach(r => systemsGrid.appendChild(r));
@@ -5981,8 +6146,10 @@
 
                 // Cor do dashboard (green/yellow/red/gray ou verde/amarelo/vermelho/cinza) → editor
                 function dc(c) {
-                    return { green: 'verde', yellow: 'amarelo', red: 'vermelho', gray: 'cinza',
-                             verde: 'verde', amarelo: 'amarelo', vermelho: 'vermelho', cinza: 'cinza' }[c] || 'cinza';
+                    return {
+                        green: 'verde', yellow: 'amarelo', red: 'vermelho', gray: 'cinza',
+                        verde: 'verde', amarelo: 'amarelo', vermelho: 'vermelho', cinza: 'cinza'
+                    }[c] || 'cinza';
                 }
 
                 // Choice '1'/'2'/'3'/null → cor editor
@@ -5996,13 +6163,13 @@
 
                 naviosReais.forEach(function (navio) {
                     const nome = navio.nome;
-                    const sd   = statusDetalhesNavios[nome] || {};
+                    const sd = statusDetalhesNavios[nome] || {};
                     const sdEq = sd.equipamentos || {};
-                    const sdPe = sd.pessoal      || {};
+                    const sdPe = sd.pessoal || {};
                     const sdCe = sd.certificacao || {};
-                    const raw  = dadosSharePoint[nome] || {};   // dados brutos com os números
-                    const nse  = dadosIndicadores[nome] || { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
-                    const trip = tripulacaoNavios[nome]  || {};
+                    const raw = dadosSharePoint[nome] || {};   // dados brutos com os números
+                    const nse = dadosIndicadores[nome] || { idoSD: 0, reqsOutstanding: 0, srsOutstanding: 0 };
+                    const trip = tripulacaoNavios[nome] || {};
 
                     // ── Equipamentos: cor vem do statusDetalhes (mais confiável) ──
                     const eq = EQ_LABELS.map(function (label, i) {
@@ -6014,55 +6181,55 @@
 
                     // ── Trifix: número exato do dadosSharePoint ──
                     const trifixItem = sdPe['Trifix %'] || {};
-                    const trifixVal  = (raw.TrifixPercentual !== null && raw.TrifixPercentual !== undefined)
+                    const trifixVal = (raw.TrifixPercentual !== null && raw.TrifixPercentual !== undefined)
                         ? raw.TrifixPercentual : '';
 
                     // ── Vetting: número exato do dadosSharePoint ──
                     const vetItem = sdCe['Obs Vetting'] || {};
-                    const vetVal  = (raw.ObsVetting !== null && raw.ObsVetting !== undefined)
+                    const vetVal = (raw.ObsVetting !== null && raw.ObsVetting !== undefined)
                         ? raw.ObsVetting : '';
 
                     // ── PendenciaDoc: agora Choice (1/2/3), não número ──
                     const diasVal = 0;  // campo numérico não existe mais no SharePoint
 
                     // Pessoal
-                    const tvItem = sdPe['Tripulantes vencidos']        || {};
-                    const cmItem = sdPe['Crew Matrix']                 || {};
-                    const ctItem = sdPe['Certificação de Tripulante']  || {};
+                    const tvItem = sdPe['Tripulantes vencidos'] || {};
+                    const cmItem = sdPe['Crew Matrix'] || {};
+                    const ctItem = sdPe['Certificação de Tripulante'] || {};
 
                     // Certificação
                     const pdItem = sdCe['Pendência de Documentação Navio'] || {};
-                    const ccItem = sdCe['Condição de classe']               || {};
+                    const ccItem = sdCe['Condição de classe'] || {};
 
                     resultado[nome] = {
                         classe: navio.classe,
                         eq: eq,
-                        trifix:         trifixVal,
-                        trifixObs:      trifixItem.obs || '',
-                        tripVencidos:   { cor: dc(tvItem.cor) || choiceCor(raw.TripulantesVencidos),  obs: tvItem.obs || '' },
-                        crewMatrix:     { cor: dc(cmItem.cor) || choiceCor(raw.CrewMatrix),            obs: cmItem.obs || '' },
-                        certTripulante: { cor: dc(ctItem.cor) || choiceCor(raw.CertTripulante),        obs: ctItem.obs || '' },
-                        pendencia:      { cor: dc(pdItem.cor) || choiceCor(raw.PendenciaDoc),          obs: pdItem.obs || '' },
-                        diasVencer:     diasVal,
-                        condicaoClasse: { cor: dc(ccItem.cor) || choiceCor(raw.CondicaoClasse),        obs: ccItem.obs || '' },
-                        vetting:        vetVal,
-                        vettingObs:     vetItem.obs || '',
-                        idoSD: nse.idoSD             || 0,
-                        reqs:  nse.reqsOutstanding   || 0,
-                        srs:   nse.srsOutstanding    || 0,
-                        cmt:    (trip.CMT    && trip.CMT    !== 'Não informado') ? trip.CMT    : '',
+                        trifix: trifixVal,
+                        trifixObs: trifixItem.obs || '',
+                        tripVencidos: { cor: dc(tvItem.cor) || choiceCor(raw.TripulantesVencidos), obs: tvItem.obs || '' },
+                        crewMatrix: { cor: dc(cmItem.cor) || choiceCor(raw.CrewMatrix), obs: cmItem.obs || '' },
+                        certTripulante: { cor: dc(ctItem.cor) || choiceCor(raw.CertTripulante), obs: ctItem.obs || '' },
+                        pendencia: { cor: dc(pdItem.cor) || choiceCor(raw.PendenciaDoc), obs: pdItem.obs || '' },
+                        diasVencer: diasVal,
+                        condicaoClasse: { cor: dc(ccItem.cor) || choiceCor(raw.CondicaoClasse), obs: ccItem.obs || '' },
+                        vetting: vetVal,
+                        vettingObs: vetItem.obs || '',
+                        idoSD: nse.idoSD || 0,
+                        reqs: nse.reqsOutstanding || 0,
+                        srs: nse.srsOutstanding || 0,
+                        cmt: (trip.CMT && trip.CMT !== 'Não informado') ? trip.CMT : '',
                         cmtMat: trip.CMT_MAT || '',
-                        cfm:    (trip.CFM    && trip.CFM    !== 'Não informado') ? trip.CFM    : '',
+                        cfm: (trip.CFM && trip.CFM !== 'Não informado') ? trip.CFM : '',
                         cfmMat: trip.CFM_MAT || '',
-                        imt:    (trip.IMT    && trip.IMT    !== 'Não informado') ? trip.IMT    : '',
+                        imt: (trip.IMT && trip.IMT !== 'Não informado') ? trip.IMT : '',
                         imtMat: trip.IMT_MAT || ''
                     };
                 });
 
                 const json = JSON.stringify(resultado, null, 2);
                 const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
-                const url  = URL.createObjectURL(blob);
-                const a    = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
                 a.href = url; a.download = 'editor_navios_progresso.json';
                 document.body.appendChild(a); a.click();
                 document.body.removeChild(a);
@@ -6103,7 +6270,8 @@
     </div>
     <button id="btnSairApresentacao" onclick="sairModoApresentacao()">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            <path
+                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
         </svg>
         ESC — Sair
     </button>
